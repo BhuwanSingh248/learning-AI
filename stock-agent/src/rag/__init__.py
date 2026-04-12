@@ -42,6 +42,15 @@ NOTE (Phase 7.1):
     Implementation begins in Phase 7.2.
 """
 
+from src.rag.embedder import EMBEDDING_DIM, MODEL_NAME, EmbeddingModel
 from src.rag.retriever import RAGRetriever, RetrievalResult
 
-__all__ = ["RAGRetriever", "RetrievalResult"]
+__all__ = [
+    # Phase 7.1 — design stubs
+    "RAGRetriever",
+    "RetrievalResult",
+    # Phase 7.2 — embedding layer
+    "EmbeddingModel",
+    "MODEL_NAME",
+    "EMBEDDING_DIM",
+]
