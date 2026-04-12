@@ -20,6 +20,10 @@ from src.agent.stock_agent import StockAgent
 logger = setup_logger(__name__)
 router = APIRouter()
 
+from src.rag.embedder import EmbeddingModel
+from src.rag.faiss_store import FAISSStore
+from src.rag.retriever import RAGRetriever
+
 # Instantiate core business logic dependencies once per application startup
 # For complete scalability this could be handled by a formal Dependency Injection container.
 provider = OpenBBProvider()
@@ -27,7 +31,15 @@ data_service = DataService(provider)
 llm_client = LLMClient()
 reasoning_engine = ReasoningEngine(llm_client)
 
-agent = StockAgent(data_service=data_service, reasoning_engine=reasoning_engine)
+rag_embedder = EmbeddingModel()
+rag_store = FAISSStore()
+rag_retriever = RAGRetriever(store=rag_store, embedder=rag_embedder)
+
+agent = StockAgent(
+    data_service=data_service, 
+    reasoning_engine=reasoning_engine,
+    rag_retriever=rag_retriever
+)
 
 
 @router.post("/suggest", response_model=SuggestResponse)

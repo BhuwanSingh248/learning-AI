@@ -14,6 +14,10 @@ from src.data.services.data_service import DataService
 from src.processing.data_validator import DataValidator
 from src.analysis.market_analyzer import MarketAnalyzer
 from src.llm.reasoning import ReasoningEngine, LLMDecision
+from src.rag.retriever import RAGRetriever
+
+import asyncio
+from src.config.database import AsyncSessionLocal
 
 logger = setup_logger(__name__)
 
@@ -32,14 +36,16 @@ class StockAgent:
     The main Orchestrator that bridges Data, Processing, Analysis, and LLM Logic.
     """
 
-    def __init__(self, data_service: DataService, reasoning_engine: ReasoningEngine):
+    def __init__(self, data_service: DataService, reasoning_engine: ReasoningEngine, rag_retriever: RAGRetriever | None = None):
         """
         Args:
             data_service: Configured data service instance (DIP).
             reasoning_engine: Configured LLM reasoning instance (DIP).
+            rag_retriever: Configured RAG retriever for LLM context enrichment.
         """
         self.data_service = data_service
         self.reasoning_engine = reasoning_engine
+        self.rag_retriever = rag_retriever
 
     def analyze_stocks(self, symbols: List[str], lookback_days: int = 90) -> Dict[str, Any]:
         """
@@ -87,7 +93,19 @@ class StockAgent:
                 )
 
                 # 4. Generate AI Decision
-                llm_decision: LLMDecision = self.reasoning_engine.make_decision(signals)
+                context_text = ""
+                if self.rag_retriever:
+                    try:
+                        async def _fetch():
+                            async with AsyncSessionLocal() as session:
+                                res = await self.rag_retriever.retrieve(symbol, session, top_k=5)
+                                return res.formatted_context
+                        
+                        context_text = asyncio.run(_fetch())
+                    except Exception as e:
+                        logger.warning("StockAgent | Failed to retrieve RAG context for %s: %s", symbol, e)
+
+                llm_decision: LLMDecision = self.reasoning_engine.make_decision(signals, context_text)
 
                 # 5. Calculate Ranking Score 
                 # Formula: (momentum * 0.4) + (sentiment * 0.4) + (event_score * 0.2)

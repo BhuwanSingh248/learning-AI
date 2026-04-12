@@ -39,14 +39,14 @@ class ReasoningEngine:
         """
         self.llm_client = llm_client
 
-    def make_decision(self, signals: CombinedMarketSignal) -> LLMDecision:
+    def make_decision(self, signals: CombinedMarketSignal, context_text: str = "") -> LLMDecision:
         """
         Full reasoning pipeline: Signals -> Prompt -> LLM -> Structured Decision.
         """
         logger.info("ReasoningEngine | Making decision for %s", signals.symbol)
         
         # 1. Generate Prompt
-        prompt = PromptBuilder.build_financial_reasoning_prompt(signals)
+        prompt = PromptBuilder.build_financial_reasoning_prompt(signals, context_text)
         
         # 2. Query LLM
         raw_response = self.llm_client.generate_response(prompt)
