@@ -2,59 +2,38 @@
 RAG Retriever
 =============
 
-Defines the public contract for the RAG retrieval layer.
+Phase 7.4 — RAG Integration: Retrieval Pipeline
+
+This orchestrates the end-to-end retrieval flow:
+    Query -> Embedding -> FAISS Search -> Postgres Metadata Fetch -> Format
 
 Architecture Placement:
 -----------------------
     Analysis Layer  →  RAGRetriever.retrieve()  →  Reasoning (LLM)
 
-Data Flow:
-----------
-
-    Offline (Indexing):
-        News articles → Embedding model → FAISS index → Persisted on disk
-
-    Online (Query Time):
-        symbol (+ optional free-text query)
-            ↓
-        Query embedding produced
-            ↓
-        FAISS similarity search  (Top-K = 5 for MVP)
-            ↓
-        Raw news strings fetched from store
-            ↓
-        RetrievalResult returned to ReasoningEngine
-
-Inputs:
--------
-    symbol : str      — The ticker being analysed (e.g. "AAPL")
-    query  : str      — Optional natural-language context clue
-                        (e.g. "recent earnings performance")
-    top_k  : int      — Number of results to return.  Default: 5 (MVP).
-
-Outputs:
---------
-    RetrievalResult   — A lightweight dataclass containing:
-                            symbol    : str
-                            items     : list[str]   (plain news snippets)
-
-Retrieval Strategy (MVP):
--------------------------
-    Pure similarity search via FAISS (cosine / L2).
-    Hybrid search (keyword + vector) and time-weighted retrieval are
-    deferred to the backlog.
-
-NOTE (Phase 7.1):
------------------
-    This file holds DESIGN STUBS ONLY.
-    The class body raises NotImplementedError everywhere so that callers
-    fail fast and clearly if this layer is wired up before Phase 7.2.
-    Do NOT implement FAISS / embedding logic here yet.
+Data Flow (Online Query Time):
+------------------------------
+    symbol (+ optional free-text query)
+        ↓
+    Query embedding produced inside EmbeddingModel
+        ↓
+    FAISS similarity search bounded locally via FAISSStore
+        ↓
+    Raw news strings fetched from PostgreSQL mapping
+        ↓
+    RetrievalResult built and returned
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from src.rag.embedder import EmbeddingModel
+from src.rag.faiss_store import FAISSStore
+from src.config.logger import setup_logger
+
+logger = setup_logger(__name__)
 
 
 @dataclass(frozen=True)
@@ -74,65 +53,52 @@ class RetrievalResult:
     symbol: str
     items: list[str] = field(default_factory=list)
 
+    @property
+    def formatted_context(self) -> str:
+        """
+        Formats the retrieved items into an LLM-friendly block.
+        Fallback handling is implemented here if `items` is empty.
+        """
+        if not self.items:
+            return "No significant recent news found."
+        
+        lines = ["Recent News:\n"]
+        for idx, item in enumerate(self.items, 1):
+            lines.append(f"{idx}. {item}")
+            
+        return "\n".join(lines)
+
 
 class RAGRetriever:
     """
-    Public interface for the RAG retrieval subsystem.
+    Public interface orchestrating the RAG retrieval subsystem.
 
     Responsibilities (SRP):
     -----------------------
-        - Embed incoming queries (Phase 7.2)
-        - Search FAISS index for Top-K similar news (Phase 7.2)
-        - Return a ``RetrievalResult`` to the caller
-
-    NOT responsible for:
-    --------------------
-        - Fetching news from external APIs  → src/data/
-        - Cleaning / chunking raw text      → src/processing/
-        - Scoring signals                   → src/analysis/
-        - Building or sending LLM prompts   → src/llm/
-
-    Design (DIP):
-    -------------
-        The LLM Reasoning layer depends **only** on ``RetrievalResult``.
-        It has no knowledge of FAISS, embeddings, or how context is produced.
-        This lets us swap the backend (e.g. ChromaDB, Qdrant) without
-        touching the LLM layer.
-
-    Design (OCP):
-    -------------
-        Retrieval strategy, Top-K value, and similarity metric can be
-        changed by sub-classing or injecting different parameters —
-        the public ``retrieve()`` signature stays stable.
-
-    Usage (future, Phase 7.2+):
-    ----------------------------
-        retriever = RAGRetriever(index_path="faiss.index", store_path="news_store.json")
-        result    = retriever.retrieve(symbol="AAPL", query="recent earnings", top_k=5)
-        # result.items → ["Apple reported ...", "Analysts raised ...", ...]
+        - Embed incoming queries using `EmbeddingModel`.
+        - Search FAISS index + fetch metadata using `FAISSStore`.
+        - Enforce limits and fallbacks.
+        - Return a sanitized ``RetrievalResult`` to the caller.
     """
 
-    def __init__(self, index_path: str, store_path: str) -> None:
+    def __init__(self, store: FAISSStore, embedder: EmbeddingModel) -> None:
         """
+        Dependency injected setup for cleaner testing / inversion of control.
+        
         Parameters
         ----------
-        index_path : str
-            Path to the persisted FAISS index file.
-            (Implementation deferred to Phase 7.2)
-        store_path : str
-            Path to the JSON / SQLite file mapping FAISS IDs → news text.
-            (Implementation deferred to Phase 7.2)
+        store : FAISSStore
+            Initialized vector store system.
+        embedder : EmbeddingModel
+            Initialized lightweight embedding system.
         """
-        # TODO (Phase 7.2): Load FAISS index from index_path
-        # TODO (Phase 7.2): Load news store from store_path
-        raise NotImplementedError(
-            "RAGRetriever is a Phase 7.1 design stub. "
-            "Implementation begins in Phase 7.2."
-        )
+        self.store = store
+        self.embedder = embedder
 
-    def retrieve(
+    async def retrieve(
         self,
         symbol: str,
+        db_session: AsyncSession,
         query: str = "",
         top_k: int = 5,
     ) -> RetrievalResult:
@@ -142,27 +108,42 @@ class RAGRetriever:
         Parameters
         ----------
         symbol : str
-            The stock ticker being analysed.
+            The stock ticker being analyzed.
+        db_session : AsyncSession
+            Active async database session for Postgres metadata fetching.
         query : str, optional
-            A natural-language hint to guide retrieval.
-            If omitted, the symbol name is used as the implicit query.
+            A natural-language hint. If omitted, the `symbol` is used.
         top_k : int, optional
-            Maximum number of results to return.  Defaults to 5 (MVP value).
+            Limit to avoid LLM overload. Defaults to 5.
 
         Returns
         -------
         RetrievalResult
-            Frozen dataclass with ``symbol`` and ``items`` (list of strings).
-
-        Raises
-        ------
-        NotImplementedError
-            Always, until Phase 7.2 implementation is complete.
+            A structured, LLM-ready dataclass of search hits.
         """
-        # TODO (Phase 7.2): Embed `query` (or symbol) using the embedding model
-        # TODO (Phase 7.2): Run FAISS.search(embedding, top_k) → IDs + distances
-        # TODO (Phase 7.2): Look up IDs in news store → text snippets
-        # TODO (Phase 7.2): Return RetrievalResult(symbol=symbol, items=snippets)
-        raise NotImplementedError(
-            "RAGRetriever.retrieve() is a Phase 7.1 design stub."
+        # Determine strict semantic query
+        semantic_query = query.strip() if query.strip() else f"Recent context and news updates for {symbol}"
+        logger.debug("RAGRetriever | Generating embedding for query: '%s'", semantic_query)
+        
+        # 1. Embed Query
+        vector = self.embedder.embed_text(semantic_query)
+        
+        # 2. Search FAISS + DB
+        logger.debug("RAGRetriever | Searching vector storage for top %d items", top_k)
+        records = await self.store.search(query_vector=vector, top_k=top_k, db_session=db_session)
+        
+        # 3. Format and clean output text
+        retrieved_texts = []
+        for r in records:
+            # Enforce limits loosely (truncating at 1000 chars per item just to be safe)
+            clean_text = r.news_text.strip()
+            if len(clean_text) > 1000:
+                clean_text = clean_text[:997] + "..."
+            retrieved_texts.append(clean_text)
+
+        logger.info("RAGRetriever | Retrieved %d context items for '%s'", len(retrieved_texts), symbol)
+        
+        return RetrievalResult(
+            symbol=symbol,
+            items=retrieved_texts
         )
