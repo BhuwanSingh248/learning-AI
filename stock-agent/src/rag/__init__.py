@@ -43,6 +43,8 @@ NOTE (Phase 7.1):
 """
 
 from src.rag.embedder import EMBEDDING_DIM, MODEL_NAME, EmbeddingModel
+from src.rag.models import RagNewsMetadata
+from src.rag.faiss_store import FAISSStore
 from src.rag.retriever import RAGRetriever, RetrievalResult
 
 __all__ = [
@@ -53,4 +55,7 @@ __all__ = [
     "EmbeddingModel",
     "MODEL_NAME",
     "EMBEDDING_DIM",
+    # Phase 7.3 — FAISS storage & retrieval
+    "RagNewsMetadata",
+    "FAISSStore",
 ]
