@@ -9,7 +9,7 @@ from fastapi import APIRouter, HTTPException
 from typing import Any
 
 from src.config.logger import setup_logger
-from src.api.schemas import SuggestRequest, SuggestResponse, SuggestionItem
+from src.api.schemas import SuggestRequest, SuggestResponse, SuggestionItem, HealthResponse, HealthCheckItem
 
 from src.data.providers.openbb_provider import OpenBBProvider
 from src.data.services.data_service import DataService
@@ -43,7 +43,7 @@ agent = StockAgent(
 
 
 @router.post("/suggest", response_model=SuggestResponse)
-def suggest_stocks(request: SuggestRequest) -> Any:
+async def suggest_stocks(request: SuggestRequest) -> Any:
     """
     Analyzes multiple stocks to determine the optimal financial action.
     """
@@ -54,7 +54,7 @@ def suggest_stocks(request: SuggestRequest) -> Any:
 
     try:
         # Run orchestrated pipeline
-        results = agent.analyze_stocks(request.symbols, lookback_days=request.lookback_days)
+        results = await agent.analyze_stocks(request.symbols, lookback_days=request.lookback_days)
         
         # Format response correctly into Pydantic models structure
         output = SuggestResponse(
@@ -63,7 +63,10 @@ def suggest_stocks(request: SuggestRequest) -> Any:
                     symbol=item["symbol"],
                     score=item["score"],
                     decision=item["decision"],
-                    reason=item["reason"]
+                    reason=item["reason"],
+                    signal_breakdown=item.get("signal_breakdown"),
+                    rag=item.get("rag"),
+                    prediction=item.get("prediction")
                 ) for item in results["suggestions"]
             ]
         )
@@ -72,3 +75,115 @@ def suggest_stocks(request: SuggestRequest) -> Any:
     except Exception as e:
         logger.error("API | Fatal internal server error during /suggest: %s", e)
         raise HTTPException(status_code=500, detail="An internal server error occurred while processing the request.")
+
+
+@router.get("/health", response_model=HealthResponse)
+async def health_check() -> Any:
+    """
+    Returns subsystem readiness status based on actual runtime probes.
+    """
+    overall_level = "healthy"
+    
+    # 1. Evaluate Database (Async)
+    db_status = "healthy"
+    try:
+        from sqlalchemy import text
+        from src.config.database import engine
+        async with engine.begin() as conn:
+            await conn.execute(text("SELECT 1"))
+    except Exception as e:
+        logger.error("HealthProbe | DB unreachable: %s", e)
+        db_status = "unhealthy"
+        overall_level = "degraded"
+
+    # 2. Evaluate FAISS Vector Store Status
+    try:
+        if hasattr(rag_store, 'index') and rag_store.index is not None and rag_store.index.ntotal >= 0:
+            index_status = "healthy"
+        else:
+            index_status = "unhealthy"
+            overall_level = "degraded"
+    except Exception:
+        index_status = "unhealthy"
+        overall_level = "degraded"
+
+    # 3. Evaluate LLM / Reasoning Reachability
+    llm_status = "healthy"
+    try:
+        import urllib.request
+        # Check if Ollama is responsive
+        req = urllib.request.Request("http://localhost:11434/api/tags")
+        with urllib.request.urlopen(req, timeout=2) as response:
+            if response.status != 200:
+                llm_status = "unhealthy"
+                overall_level = "degraded"
+    except Exception:
+        llm_status = "unhealthy"
+        overall_level = "degraded"
+
+    # If DB is down, consider it unavailable rather than just degraded since we can't persist memory mapping
+    if db_status == "unhealthy":
+        overall_level = "unavailable"
+
+    return HealthResponse(
+        level=overall_level,
+        summary="System readiness evaluated dynamically.",
+        details="All critical services are operational." if overall_level == "healthy" else "System is experiencing degradation or outages.",
+        probe_target="/health",
+        checks={
+            "api": HealthCheckItem(status="healthy", summary="API responding."),
+            "database": HealthCheckItem(status=db_status, summary="DB reachable." if db_status == "healthy" else "DB unreachable."),
+            "embedding_layer": HealthCheckItem(
+                status="healthy" if rag_embedder else "unhealthy", 
+                summary="Embedding model loaded." if rag_embedder else "Model missing.", 
+                embedding_model="all-MiniLM-L6-v2", 
+                vector_dimension=384
+            ),
+            "vector_index": HealthCheckItem(
+                status=index_status, 
+                summary="FAISS index ready." if index_status == "healthy" else "FAISS index unavailable.", 
+                index_type="flat_l2", 
+                top_k=5
+            ),
+            "retrieval_pipeline": HealthCheckItem(
+                status="healthy" if rag_retriever else "unhealthy", 
+                summary="Retriever operational." if rag_retriever else "Retriever offline.", 
+                retrieval_strategy="similarity_search"
+            ),
+            "reasoning": HealthCheckItem(
+                status=llm_status, 
+                summary="LLM reasoning operational." if llm_status == "healthy" else "LLM offline / unreachable.", 
+                prompt_mode="signals+context"
+            )
+        }
+    )
+
+
+@router.get("/debug/symbol/{symbol}", response_model=SuggestResponse)
+async def debug_symbol(symbol: str, lookback_days: int = 90) -> Any:
+    """
+    QA endpoint for a single symbol providing full Phase 7 output.
+    """
+    logger.info("API | Received /debug request for target: %s", symbol)
+    try:
+        results = await agent.analyze_stocks([symbol.upper()], lookback_days=lookback_days)
+        
+        output = SuggestResponse(
+            suggestions=[
+                SuggestionItem(
+                    symbol=item["symbol"],
+                    score=item["score"],
+                    decision=item["decision"],
+                    reason=item["reason"],
+                    signal_breakdown=item.get("signal_breakdown"),
+                    rag=item.get("rag"),
+                    prediction=item.get("prediction")
+                ) for item in results["suggestions"]
+            ]
+        )
+        return output
+
+    except Exception as e:
+        logger.error("API | Fatal internal server error during /debug: %s", e)
+        raise HTTPException(status_code=500, detail="An internal server error occurred while processing the debug request.")
+

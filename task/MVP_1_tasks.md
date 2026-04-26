@@ -82,3 +82,28 @@ This document consolidates the end-to-end development of the AI Stock Agent MVP.
 2.  **REST Routes:** Created the `/suggest` POST endpoint to trigger the Orchestration Agent.
 3.  **Lifespan Management:** Refactored `main.py` to use `fastapi.lifespan`, ensuring the database connection is verified before any requests are served.
 4.  **E2E Validation:** Verified the complete flow from `HTTP Request` -> `OpenBB Fetch` -> `LLM Decision` -> `HTTP Response`.
+
+---
+
+## 🧠 Phase 7 — RAG Integration (Semantic Enrichment)
+**Objective:** Enhance the LLM's reasoning by providing it with relevant, retrieved financial news context.
+**Achievement:** Successfully implemented a full RAG pipeline using FAISS and sentence-transformers, integrated into the reasoning engine.
+
+### 🛠️ Technical Flow:
+1.  **Embedding Layer:** Built `src/rag/embedder.py` using `all-MiniLM-L6-v2` to transform news text into 384-dimensional vectors.
+2.  **Vector Storage:** Implemented `src/rag/faiss_store.py` with a FAISS FlatL2 index and a PostgreSQL metadata bridge (`rag_news_metadata`).
+3.  **Retrieval Pipeline:** Developed `src/rag/retriever.py` to orchestrate query embedding, similarity search, and metadata reconstruction.
+4.  **Prompt Enrichment:** Updated `src/llm/prompt_builder.py` to inject retrieved context into LLM prompts with strict reasoning guardrails.
+5.  **Agent Integration:** Upgraded `StockAgent` to perform asynchronous context retrieval before LLM inference, ensuring data-driven, context-aware decisions.
+
+---
+
+## 🚀 Completion & E2E Validation
+**Achievement:** Verified the entire system end-to-end, confirming that technical signals and semantic news context are correctly utilized by the LLM to generate ranked stock recommendations.
+
+### 🧪 Final E2E Status:
+- ✅ Data Providers (OpenBB) functional.
+- ✅ Signal Engineering (Technical/Sentiment/Events) calculated correctly.
+- ✅ RAG Pipeline (Embedding/FAISS/Postgres) operational.
+- ✅ LLM Reasoning (Ollama/Mistral) producing structured advice.
+- ✅ API Gateway (FastAPI) serving async recommendations.

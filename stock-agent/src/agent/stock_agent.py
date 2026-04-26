@@ -29,6 +29,9 @@ class RankedSuggestion:
     score: float
     decision: str
     reason: str
+    signal_breakdown: Dict[str, Any] | None = None
+    rag: Dict[str, Any] | None = None
+    prediction: Dict[str, Any] | None = None
 
 
 class StockAgent:
@@ -47,7 +50,7 @@ class StockAgent:
         self.reasoning_engine = reasoning_engine
         self.rag_retriever = rag_retriever
 
-    def analyze_stocks(self, symbols: List[str], lookback_days: int = 90) -> Dict[str, Any]:
+    async def analyze_stocks(self, symbols: List[str], lookback_days: int = 90) -> Dict[str, Any]:
         """
         Runs the full analysis pipeline for a list of symbols and ranks them.
         
@@ -94,14 +97,16 @@ class StockAgent:
 
                 # 4. Generate AI Decision
                 context_text = ""
+                context_items = []
                 if self.rag_retriever:
                     try:
                         async def _fetch():
                             async with AsyncSessionLocal() as session:
-                                res = await self.rag_retriever.retrieve(symbol, session, top_k=5)
-                                return res.formatted_context
+                                return await self.rag_retriever.retrieve(symbol, session, top_k=5)
                         
-                        context_text = asyncio.run(_fetch())
+                        res = await _fetch()
+                        context_text = res.formatted_context
+                        context_items = res.context_items
                     except Exception as e:
                         logger.warning("StockAgent | Failed to retrieve RAG context for %s: %s", symbol, e)
 
@@ -112,12 +117,46 @@ class StockAgent:
                 score = (signals.price_signals.momentum * 0.4) + \
                         (signals.news_signals.sentiment_score * 0.4) + \
                         (signals.event_signals.event_score * 0.2)
+                
+                # Build Signal Breakdown
+                signal_breakdown = {
+                    "trend": signals.price_signals.trend,
+                    "momentum": signals.price_signals.momentum,
+                    "volatility": signals.price_signals.volatility,
+                    "sentiment_score": signals.news_signals.sentiment_score,
+                    "event_score": signals.event_signals.event_score
+                }
+
+                # Build RAG Debug Info
+                rag_info = {
+                    "enabled": bool(self.rag_retriever),
+                    "query": f"Recent context and news updates for {symbol}" if self.rag_retriever else None,
+                    "retrieval_strategy": "similarity_search" if self.rag_retriever else None,
+                    "top_k": 5 if self.rag_retriever else None,
+                    "embedding_model": "all-MiniLM-L6-v2" if self.rag_retriever else None,
+                    "vector_dimension": 384 if self.rag_retriever else None,
+                    "index_type": "flat_l2" if self.rag_retriever else None,
+                    "fallback_used": not bool(context_items) if self.rag_retriever else False,
+                    "context_preview": context_text[:200] + "..." if context_text else None,
+                    "context_items": context_items
+                }
+
+                # Build Prediction Meta
+                prediction_meta = {
+                    "horizon": "short_term",
+                    "rank_bucket": "top_candidate" if score > 0.6 else ("neutral" if score >= 0.4 else "low_candidate"),
+                    "confidence": round(abs(score), 2),
+                    "expected_direction": "bullish" if score > 0.6 else ("neutral" if score >= 0.4 else "bearish")
+                }
 
                 suggestions.append(RankedSuggestion(
                     symbol=symbol,
                     score=round(score, 4),
                     decision=llm_decision.decision,
-                    reason=llm_decision.reason
+                    reason=llm_decision.reason,
+                    signal_breakdown=signal_breakdown,
+                    rag=rag_info,
+                    prediction=prediction_meta
                 ))
 
                 logger.debug("StockAgent | Successfully analyzed %s. Score: %.3f", symbol, score)
@@ -135,7 +174,10 @@ class StockAgent:
                     "symbol": s.symbol,
                     "score": s.score,
                     "decision": s.decision,
-                    "reason": s.reason
+                    "reason": s.reason,
+                    "signal_breakdown": s.signal_breakdown,
+                    "rag": s.rag,
+                    "prediction": s.prediction
                 }
                 for s in suggestions
             ]

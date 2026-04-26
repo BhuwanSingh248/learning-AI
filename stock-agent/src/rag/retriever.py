@@ -52,6 +52,7 @@ class RetrievalResult:
     """
     symbol: str
     items: list[str] = field(default_factory=list)
+    context_items: list[dict] = field(default_factory=list)
 
     @property
     def formatted_context(self) -> str:
@@ -134,16 +135,25 @@ class RAGRetriever:
         
         # 3. Format and clean output text
         retrieved_texts = []
+        context_items = []
         for r in records:
             # Enforce limits loosely (truncating at 1000 chars per item just to be safe)
             clean_text = r.news_text.strip()
             if len(clean_text) > 1000:
                 clean_text = clean_text[:997] + "..."
             retrieved_texts.append(clean_text)
+            context_items.append({
+                "title": f"Context for {symbol}",
+                "summary": clean_text[:150] + "..." if len(clean_text) > 150 else clean_text,
+                "source": "FAISS Store",
+                "timestamp": r.timestamp.isoformat() if hasattr(r, 'timestamp') and r.timestamp else "Unknown",
+                "relevance_score": 0.90 # Mapped statically until distance refactor
+            })
 
         logger.info("RAGRetriever | Retrieved %d context items for '%s'", len(retrieved_texts), symbol)
         
         return RetrievalResult(
             symbol=symbol,
-            items=retrieved_texts
+            items=retrieved_texts,
+            context_items=context_items
         )

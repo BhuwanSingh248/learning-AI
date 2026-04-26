@@ -270,10 +270,10 @@ class OpenBBProvider(IDataProvider):
                 except Exception as exc:
                     logger.warning("Skipping malformed earnings row for %s: %s", symbol, exc)
         except Exception as exc:
-            logger.warning(
-                "OpenBBProvider: earnings fetch failed for %s (FMP key required?): %s",
-                symbol, exc,
-            )
+            if "Missing credential" in str(exc):
+                logger.info("OpenBBProvider | Skipping earnings for %s (FMP_API_KEY not configured).", symbol)
+            else:
+                logger.warning("OpenBBProvider | Earnings fetch failed for %s: %s", symbol, exc)
 
         # ---- Splits (fmp — requires FMP_API_KEY) ---- #
         try:
@@ -296,10 +296,10 @@ class OpenBBProvider(IDataProvider):
                 except Exception as exc:
                     logger.warning("Skipping malformed split row for %s: %s", symbol, exc)
         except Exception as exc:
-            logger.warning(
-                "OpenBBProvider: splits fetch failed for %s (FMP key required?): %s",
-                symbol, exc,
-            )
+            if "Missing credential" in str(exc):
+                logger.info("OpenBBProvider | Skipping splits for %s (FMP_API_KEY not configured).", symbol)
+            else:
+                logger.warning("OpenBBProvider | Splits fetch failed for %s: %s", symbol, exc)
 
         logger.info(
             "OpenBBProvider.get_corporate_actions | symbol=%s → %d actions",
