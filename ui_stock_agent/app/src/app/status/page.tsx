@@ -6,7 +6,7 @@ export default function StatusPage() {
     <AppShell
       eyebrow="Infra"
       title="System status"
-      description="Temporary health visibility while the backend evolves toward a dedicated health endpoint."
+      description="Health visibility for the current API plus the Phase 7 embedding, retrieval, and reasoning layers when the backend exposes them."
     >
       <div className="grid gap-6">
         <SystemStatusPanel detailed />

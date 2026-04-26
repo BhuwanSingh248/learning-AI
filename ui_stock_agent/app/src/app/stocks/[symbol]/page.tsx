@@ -14,7 +14,7 @@ export default async function StockDetailPage({ params }: StockDetailPageProps) 
     <AppShell
       eyebrow="Explainability"
       title={`${symbol.toUpperCase()} detail`}
-      description="Single-symbol drilldown using the most recent client-side session data."
+      description="Single-symbol drilldown using the most recent client-side session data, with room for Phase 7 retrieval and reasoning context."
     >
       <StockDetailScreen symbol={symbol.toUpperCase()} />
     </AppShell>
