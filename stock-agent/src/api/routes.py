@@ -24,10 +24,23 @@ from src.rag.embedder import EmbeddingModel
 from src.rag.faiss_store import FAISSStore
 from src.rag.retriever import RAGRetriever
 
+from src.data.providers.marketaux_provider import MarketauxProvider
+from src.data.providers.gnews_provider import GNewsProvider
+from src.data.providers.composite_provider import CompositeDataProvider
+
 # Instantiate core business logic dependencies once per application startup
 # For complete scalability this could be handled by a formal Dependency Injection container.
-provider = OpenBBProvider()
-data_service = DataService(provider)
+openbb_provider = OpenBBProvider()
+marketaux_provider = MarketauxProvider()
+gnews_provider = GNewsProvider()
+
+composite_provider = CompositeDataProvider(
+    primary=openbb_provider,
+    news_main=marketaux_provider,
+    news_fallback=gnews_provider
+)
+
+data_service = DataService(composite_provider)
 llm_client = LLMClient()
 reasoning_engine = ReasoningEngine(llm_client)
 

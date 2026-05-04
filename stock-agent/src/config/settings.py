@@ -18,5 +18,9 @@ class Settings:
     APP_NAME: str = os.getenv("APP_NAME", "AI Stock Recommendation Agent")
     DEBUG: bool = os.getenv("DEBUG", "False").lower() in ("true", "1", "t")
 
+    # API Keys
+    MARKETAUX_API_KEY: str = os.getenv("MARKETAUX_API_KEY", "")
+    GNEWS_API_KEY: str = os.getenv("GNEWS_API_KEY", "")
+
 # Instantiate settings to be used across the app
 settings = Settings()

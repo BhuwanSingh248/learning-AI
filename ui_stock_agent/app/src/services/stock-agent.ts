@@ -163,7 +163,12 @@ function normalizePredictionMeta(
   }
 
   if (isFiniteNumber(payload.confidence)) {
-    normalized.confidence = payload.confidence;
+    // Accept either ratio scale (0..1) or percent scale (0..100) from backend.
+    if (payload.confidence > 1 && payload.confidence <= 100) {
+      normalized.confidence = payload.confidence / 100;
+    } else {
+      normalized.confidence = payload.confidence;
+    }
   }
 
   if (payload.expected_direction?.trim()) {
@@ -174,18 +179,39 @@ function normalizePredictionMeta(
 }
 
 export function normalizeSuggestResponse(payload: SuggestResponseApi): SuggestResponse {
+  const suggestions = Array.isArray(payload.suggestions) ? payload.suggestions : [];
+
   return {
-    suggestions: payload.suggestions.map((suggestion) => ({
-      symbol: suggestion.symbol.toUpperCase(),
-      score: suggestion.score,
-      decision: suggestion.decision,
-      reason: suggestion.reason,
-      signalBreakdown: normalizeSignalBreakdown(
-        suggestion.signal_breakdown ?? suggestion.signals,
-      ),
-      rag: normalizeRagInsights(suggestion.rag ?? suggestion.retrieval),
-      prediction: normalizePredictionMeta(suggestion.prediction),
-    })),
+    suggestions: suggestions
+      .map((suggestion) => {
+        const symbol =
+          typeof suggestion.symbol === "string" && suggestion.symbol.trim()
+            ? suggestion.symbol.toUpperCase()
+            : "UNKNOWN";
+
+        const score = isFiniteNumber(suggestion.score) ? suggestion.score : 0;
+        const decision =
+          typeof suggestion.decision === "string" && suggestion.decision.trim()
+            ? suggestion.decision
+            : "Neutral";
+        const reason =
+          typeof suggestion.reason === "string" && suggestion.reason.trim()
+            ? suggestion.reason
+            : "No reasoning was returned by backend.";
+
+        return {
+          symbol,
+          score,
+          decision,
+          reason,
+          signalBreakdown: normalizeSignalBreakdown(
+            suggestion.signal_breakdown ?? suggestion.signals,
+          ),
+          rag: normalizeRagInsights(suggestion.rag ?? suggestion.retrieval),
+          prediction: normalizePredictionMeta(suggestion.prediction),
+        };
+      })
+      .filter((suggestion) => suggestion.symbol !== "UNKNOWN"),
   };
 }
 
@@ -198,11 +224,14 @@ function formatSubsystemLabel(key: string) {
 }
 
 function toSystemLevel(value?: string): SystemStatusLevel {
-  switch (value?.toLowerCase()) {
+  const normalized = typeof value === "string" ? value.toLowerCase().trim() : "";
+
+  switch (normalized) {
     case "healthy":
     case "ok":
     case "up":
       return "healthy";
+    case "unhealthy":
     case "unavailable":
     case "down":
     case "error":
@@ -213,11 +242,15 @@ function toSystemLevel(value?: string): SystemStatusLevel {
 }
 
 function toSubsystemLevel(value?: string): SystemSubsystemLevel {
-  switch (value?.toLowerCase()) {
+  const normalized = typeof value === "string" ? value.toLowerCase().trim() : "";
+
+  switch (normalized) {
     case "healthy":
     case "ok":
     case "up":
       return "healthy";
+    case "unhealthy":
+      return "unavailable";
     case "degraded":
     case "warning":
       return "degraded";
