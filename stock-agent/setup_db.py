@@ -1,11 +1,13 @@
 from sqlalchemy import create_engine, text
+from src.rag.models import Base
 
-engine = create_engine("postgresql://postgres:7844@localhost:5432/postgres", isolation_level="AUTOCOMMIT")
+# Admin engine — connects to postgres DB for user/db management tasks
+admin_engine = create_engine("postgresql://postgres:7844@localhost:5432/postgres", isolation_level="AUTOCOMMIT")
 
 try:
-    with engine.connect() as conn:
+    with admin_engine.connect() as conn:
         print("Connected to PostgreSQL as 'postgres'.")
-        
+
         # Check if user exists before creating
         res = conn.execute(text("SELECT 1 FROM pg_roles WHERE rolname='stock_agent_admin'"))
         if not res.fetchone():
@@ -21,6 +23,15 @@ try:
             print("Created database 'stock_agent'.")
         else:
             print("Database 'stock_agent' already exists.")
-            
+
 except Exception as e:
     print(f"Error occurred: {e}")
+
+# App engine — connects to stock_agent DB to create application tables
+app_engine = create_engine("postgresql://postgres:7844@localhost:5432/stock_agent")
+
+try:
+    Base.metadata.create_all(app_engine)
+    print("Tables created successfully in 'stock_agent' database.")
+except Exception as e:
+    print(f"Error creating tables: {e}")

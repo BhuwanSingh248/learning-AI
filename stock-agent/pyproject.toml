@@ -11,6 +11,7 @@ dependencies = [
     "numpy>=2.2.6",
     "openbb>=4.7.1",
     "pandas>=2.3.3",
+    "psycopg2>=2.9.12",
     "python-dotenv>=1.2.2",
     "sentence-transformers>=5.3.0",
     "sqlalchemy>=2.0.49",

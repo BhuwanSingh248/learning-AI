@@ -60,7 +60,7 @@ from __future__ import annotations
 
 import numpy as np
 from sentence_transformers import SentenceTransformer
-
+from src.config.settings import settings
 from src.config.logger import setup_logger
 
 logger = setup_logger(__name__)
@@ -69,7 +69,7 @@ logger = setup_logger(__name__)
 # Constants
 # ---------------------------------------------------------------------------
 
-MODEL_NAME: str = "all-MiniLM-L6-v2"
+MODEL_NAME: str = settings.MODEL_NAME
 """
 The model used for all embedding operations in this project.
 
@@ -77,7 +77,7 @@ The model used for all embedding operations in this project.
     Changing the model invalidates all previously stored vectors.
 """
 
-EMBEDDING_DIM: int = 384
+EMBEDDING_DIM: int = settings.VECTOR_DIMENSION
 """
 Output dimensionality of ``MODEL_NAME``.
 FAISS index must be initialised with this exact value (Phase 7.3).

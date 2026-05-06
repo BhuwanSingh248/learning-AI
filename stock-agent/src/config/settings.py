@@ -33,6 +33,6 @@ class Settings:
 
     # embedding settings
     MODEL_NAME: str = os.getenv("MODEL_NAME", "all-MiniLM-L6-v2")
-  
+    VECTOR_DIMENSION: int = int(os.getenv("VECTOR_DIMENSION", "384"))
 # Instantiate settings to be used across the app
 settings = Settings()

@@ -34,6 +34,7 @@ import faiss
 import numpy as np
 from sqlalchemy.future import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from datetime import datetime
 
 from src.rag.models import RagNewsMetadata
 from src.config.logger import setup_logger
@@ -80,22 +81,30 @@ class FAISSStore:
         faiss.write_index(self.index, self.save_path)
         logger.debug("FAISSStore | Index saved to '%s'", self.save_path)
 
-    async def add_vector(self, symbol: str, news_text: str, vector: np.ndarray, db_session: AsyncSession) -> int:
+    async def add_vector(self, chunk_id:int, source_id:str,  symbol: str, chunk_index:int, chunk_text:str, timestamp:datetime, vector: np.ndarray, db_session: AsyncSession) -> int:
         """
         Inserts new text metadata into the PostgreSQL DB to get an ID.
         Then saves the vector to FAISS bounded to that ID.
 
         Parameters
         ----------
+        chunk_id : int
+            The unique identifier for the chunk.
+        source_id : str
+            The unique identifier for the source.
         symbol : str
-            Ticker symbol.
-        news_text : str
-            The clean, embedded-ready text combining title+summary.
+            The ticker symbol of the stock.
+        chunk_index : int
+            The index of the chunk within the source.
+        chunk_text : str
+            The text of the chunk.
+        timestamp : datetime
+            The timestamp of the chunk.
         vector : np.ndarray
-            The float32 numpy array embedding. Shape: (dim, ) or (1, dim).
+            The embedding vector of the chunk.
         db_session : AsyncSession
-            Active async database session.
-
+            The database session.
+            
         Returns
         -------
         int
@@ -106,7 +115,7 @@ class FAISSStore:
             vector = vector.reshape(1, -1)
 
         # 1. Insert Metadata into Database
-        metadata = RagNewsMetadata(symbol=symbol, news_text=news_text)
+        metadata = RagNewsMetadata(chunk_id=chunk_id, source_id=source_id,  symbol=symbol, chunk_index=chunk_index, chunk_text=chunk_text, timestamp=timestamp)
         db_session.add(metadata)
         await db_session.flush()  # We flush to acquire `metadata.id` before commit
 

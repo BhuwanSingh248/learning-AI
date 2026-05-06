@@ -22,7 +22,10 @@ class RagNewsMetadata(Base):
     
     id = Column(Integer, primary_key=True, index=True)
     symbol = Column(String, index=True, nullable=False)
-    news_text = Column(Text, nullable=False)
+    chunk_text = Column(Text, nullable=False)
+    chunk_id = Column(Integer, index=True, nullable=False)
+    source_id = Column(String, index=True, nullable=False)
+    chunk_index = Column(Integer, index=True, nullable=False)
     timestamp = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
 
 @dataclass
