@@ -5,6 +5,7 @@ RAG Metadata Models
 Defines the SQLAlchemy ORM models for storing RAG metadata.
 """
 
+from dataclasses import dataclass
 from sqlalchemy import Column, Integer, String, Text, DateTime
 from datetime import datetime, timezone
 from src.config.database import Base
@@ -23,3 +24,13 @@ class RagNewsMetadata(Base):
     symbol = Column(String, index=True, nullable=False)
     news_text = Column(Text, nullable=False)
     timestamp = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
+
+@dataclass
+class NewsChunk:
+    chunk_id:int
+    source_id:str
+    chunk_index:int
+    symbol:str
+    timestamp:str
+    text:str
+    

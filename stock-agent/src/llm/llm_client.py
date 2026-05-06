@@ -11,6 +11,7 @@ import urllib.error
 import json
 
 from src.config.logger import setup_logger
+from src.config.settings import settings
 
 logger = setup_logger(__name__)
 
@@ -20,7 +21,7 @@ class LLMClient:
     A simple wrapper for local Ollama LLM queries.
     """
 
-    def __init__(self, model_name: str = "mistral", base_url: str = "http://localhost:11434"):
+    def __init__(self, model_name: str = settings.LLM_MODEL, base_url: str = settings.OLLAMA_LOCAL_URL):
         """
         Initializes the LLM CLI interface parameters.
         

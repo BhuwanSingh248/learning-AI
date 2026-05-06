@@ -22,5 +22,17 @@ class Settings:
     MARKETAUX_API_KEY: str = os.getenv("MARKETAUX_API_KEY", "")
     GNEWS_API_KEY: str = os.getenv("GNEWS_API_KEY", "")
 
+    # LLM settings
+    LLM_MODEL: str = os.getenv("LLM_MODEL", "phi3:mini")
+    OLLAMA_LOCAL_URL: str = os.getenv("OLLAMA_LOCAL_URL", "http://localhost:11434")
+
+    # chunking settings
+    CHUNK_SIZE: int = int(os.getenv("CHUNK_SIZE", "600"))
+    CHUNK_OVERLAP: int = int(os.getenv("CHUNK_OVERLAP", "100"))
+    CHAR_PER_TOKEN: int = int(os.getenv("CHAR_PER_TOKEN", "4"))
+
+    # embedding settings
+    MODEL_NAME: str = os.getenv("MODEL_NAME", "all-MiniLM-L6-v2")
+  
 # Instantiate settings to be used across the app
 settings = Settings()

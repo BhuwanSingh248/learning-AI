@@ -17,3 +17,8 @@ dependencies = [
     "transformers>=5.5.0",
     "uvicorn>=0.40.0",
 ]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.3",
+]
