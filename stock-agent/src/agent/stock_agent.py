@@ -6,7 +6,7 @@ multiple stock symbols, computes signals, queries the LLM Reasoning engine,
 and ranks all outcomes into a finalized output.
 """
 
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 from dataclasses import dataclass
 
 from src.config.logger import setup_logger
@@ -15,6 +15,7 @@ from src.processing.data_validator import DataValidator
 from src.analysis.market_analyzer import MarketAnalyzer
 from src.llm.reasoning import ReasoningEngine, LLMDecision
 from src.rag.retriever import RAGRetriever
+from src.rag.indexer import NewsIndexer
 
 import asyncio
 from src.config.database import AsyncSessionLocal
@@ -39,7 +40,7 @@ class StockAgent:
     The main Orchestrator that bridges Data, Processing, Analysis, and LLM Logic.
     """
 
-    def __init__(self, data_service: DataService, reasoning_engine: ReasoningEngine, rag_retriever: RAGRetriever | None = None):
+    def __init__(self, data_service: DataService, reasoning_engine: ReasoningEngine, rag_retriever: RAGRetriever | None = None, news_indexer: Optional[NewsIndexer] = None):
         """
         Args:
             data_service: Configured data service instance (DIP).
@@ -49,6 +50,7 @@ class StockAgent:
         self.data_service = data_service
         self.reasoning_engine = reasoning_engine
         self.rag_retriever = rag_retriever
+        self.news_indexer = news_indexer
 
     async def analyze_stocks(self, symbols: List[str], lookback_days: int = 90) -> Dict[str, Any]:
         """
@@ -86,6 +88,11 @@ class StockAgent:
                 if clean_prices is None or clean_prices.empty:
                      logger.warning("StockAgent | Cleaned price data was empty for %s. Skipping.", symbol)
                      continue
+                
+                # 2.a. Index news into FAISS (Must happen before RAG retrieval)
+                if self.news_indexer and raw_news:
+                    async with AsyncSessionLocal() as session:
+                        await self.news_indexer.index_news(symbol, raw_news, session)
 
                 # 3. Generate Signals
                 signals = MarketAnalyzer.generate_signals(

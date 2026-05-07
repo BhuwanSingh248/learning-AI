@@ -23,6 +23,7 @@ router = APIRouter()
 from src.rag.embedder import EmbeddingModel
 from src.rag.faiss_store import FAISSStore
 from src.rag.retriever import RAGRetriever
+from src.rag.indexer import NewsIndexer
 
 from src.data.providers.marketaux_provider import MarketauxProvider
 from src.data.providers.gnews_provider import GNewsProvider
@@ -47,11 +48,14 @@ reasoning_engine = ReasoningEngine(llm_client)
 rag_embedder = EmbeddingModel()
 rag_store = FAISSStore()
 rag_retriever = RAGRetriever(store=rag_store, embedder=rag_embedder)
+news_indexer = NewsIndexer(faiss_store=rag_store, embedder=rag_embedder)
 
 agent = StockAgent(
     data_service=data_service, 
     reasoning_engine=reasoning_engine,
-    rag_retriever=rag_retriever
+    rag_retriever=rag_retriever,
+    news_indexer=news_indexer
+
 )
 
 
