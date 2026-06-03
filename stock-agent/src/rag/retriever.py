@@ -138,7 +138,7 @@ class RAGRetriever:
         context_items = []
         for r in records:
             # Enforce limits loosely (truncating at 1000 chars per item just to be safe)
-            clean_text = r.news_text.strip()
+            clean_text = r.chunk_text.strip()
             if len(clean_text) > 1000:
                 clean_text = clean_text[:997] + "..."
             retrieved_texts.append(clean_text)
