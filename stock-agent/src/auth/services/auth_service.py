@@ -12,30 +12,61 @@ from src.auth.core.security import (
     hash_token
 )
 
+from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
+
 from src.auth.db.db import SessionLocal
+from fastapi import HTTPException
 
 
 # REGISTER
 async def register(email: str, password: str):
-    print(f"Creating a user")
-    
     async with SessionLocal() as db:
-        user = User(
-            email=email,
-            hashed_password=hash_password(password)
-        )
-        db.add(user)
-        await db.commit()
-        print("Committed")
-        return user
 
+        email = email.lower().strip()
+
+        # Fast validation for better UX
+        existing_user = await db.scalar(
+            select(User).where(User.email == email)
+        )
+
+        if existing_user:
+            raise HTTPException(
+                status_code=409,
+                detail="Email already registered"
+            )
+
+        try:
+            user = User(
+                email=email,
+                hashed_password=hash_password(password)
+            )
+
+            db.add(user)
+            await db.commit()
+            await db.refresh(user)
+
+            return user
+
+        # Protect against race conditions
+        except IntegrityError:
+            await db.rollback()
+
+            raise HTTPException(
+                status_code=409,
+                detail="Email already registered"
+            )
 
 # LOGIN
 async def login(email: str, password: str):
+    email = email.lower().strip()
     user = await get_user_by_email(email)
 
     if not user or not verify_password(password, user.hashed_password):
-        raise Exception("Invalid credentials")
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid credentials"
+        )
 
     access_token = create_access_token({"sub": str(user.id),  "email": user.email})
 
