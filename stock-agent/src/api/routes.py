@@ -5,7 +5,7 @@ Defines the FastAPI routes exposing the underlying orchestrated StockAgent
 to HTTP requests securely.
 """
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from typing import Any
 
 from src.config.logger import setup_logger
@@ -28,6 +28,11 @@ from src.rag.indexer import NewsIndexer
 from src.data.providers.marketaux_provider import MarketauxProvider
 from src.data.providers.gnews_provider import GNewsProvider
 from src.data.providers.composite_provider import CompositeDataProvider
+
+from src.auth.schema.auth import RegisterRequest, LoginRequest, TokenResponse
+from src.auth.services.auth_service import register, login, refresh
+from src.auth.core.security import get_current_user
+
 
 # Instantiate core business logic dependencies once per application startup
 # For complete scalability this could be handled by a formal Dependency Injection container.
@@ -60,10 +65,18 @@ agent = StockAgent(
 
 
 @router.post("/suggest", response_model=SuggestResponse)
-async def suggest_stocks(request: SuggestRequest) -> Any:
+async def suggest_stocks(request: SuggestRequest, current_user=Depends(get_current_user)) -> Any:
     """
     Analyzes multiple stocks to determine the optimal financial action.
     """
+    
+    logger.info(
+        "Request by user %s",
+        current_user.email,
+    )
+    
+    print(f"current user {current_user.email}")
+    
     if not request.symbols:
         raise HTTPException(status_code=400, detail="The 'symbols' list cannot be empty.")
 
@@ -204,3 +217,31 @@ async def debug_symbol(symbol: str, lookback_days: int = 90) -> Any:
         logger.error("API | Fatal internal server error during /debug: %s", e)
         raise HTTPException(status_code=500, detail="An internal server error occurred while processing the debug request.")
 
+
+
+
+@router.post("/register")
+async def register_user(data: RegisterRequest):
+    await register(data.email, data.password)
+    return {"message": "User created"}
+
+
+@router.post("/login", response_model=TokenResponse)
+async def login_user(data: LoginRequest):
+    try:
+        access, refresh_token = await login(data.email, data.password)
+        return {
+            "access_token": access,
+            "refresh_token": refresh_token
+        }
+    except Exception as e:
+        raise HTTPException(status_code=401, detail=str(e))
+
+
+@router.post("/refresh")
+async def refresh_token(refresh_token: str):
+    try:
+        new_access = await refresh(refresh_token)
+        return {"access_token": new_access}
+    except Exception as e:
+        raise HTTPException(status_code=401, detail=str(e))

@@ -12,15 +12,24 @@ from src.config.settings import settings
 from src.config.database import engine
 from src.api.routes import router as api_router
 
+# auth imports
+from src.auth.db.db import Base
+
 async def init_db():
     try:
         # Check database connection asynchronously
         async with engine.begin() as connection:
             result = await connection.execute(text("SELECT 1"))
-            logger.info("Database connection strictly verified via asyncpg! DB runs successfully.")
+            logger.info("Database connection strictly verified via asyncpg! DB runs successfully.")   
     except Exception as e:
         logger.error(f"Failed to connect to the database: {e}")
         sys.exit(1)
+
+
+
+async def init_auth_db():
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -31,6 +40,7 @@ async def lifespan(app: FastAPI):
         
     logger.info("Connecting to PostgreSQL database asynchronously...")
     await init_db()
+    await init_auth_db()
     logger.info("Base architecture successfully boots! Service completely ready.")
     
     yield
