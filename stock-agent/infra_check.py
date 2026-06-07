@@ -15,7 +15,7 @@ print("\n[1/4] Checking Environment...")
 load_dotenv()
 db_url = os.environ.get("DB_URL")
 if db_url:
-    print(f"✅ Environment variables loaded. DB_URL is securely acquired.")
+    print(f"✅ Environment variables loaded. DB_URL is securely acquired.", db_url)
 else:
     print("❌ Environment checking failed. DB_URL missing from .env.")
 
@@ -35,7 +35,7 @@ try:
     # We do a quick completion test to ensure mistral answers
     url = "http://localhost:11434/api/generate"
     data = json.dumps({
-        "model": "mistral",
+        "model": "phi3:mini",
         "prompt": "Say hello world briefly.",
         "stream": False
     }).encode("utf-8")
@@ -45,7 +45,7 @@ try:
         content = response.read()
         res_json = json.loads(content)
         response_text = res_json.get("response", "").strip()
-        print(f"✅ Mistral responds successfully! Response: '{response_text}'")
+        print(f"✅ phi3:mini responds successfully! Response: '{response_text}'")
 except urllib.error.URLError:
     print("❌ Ollama not responding. Is the Ollama app running on localhost:11434?")
 except Exception as e:
