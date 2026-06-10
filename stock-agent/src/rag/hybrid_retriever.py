@@ -29,7 +29,14 @@ class HybridRetriever:
         """
         Executes parallel retrieval across FAISS and BM25, merging and deduplicating on chunk_id.
         """
-        logger.info(f"HybridRetriever | Triggering search for '{symbol}' with query: '{query}'")
+        _, _, merged = await self.search_detailed(query, symbol, db_session, top_k)
+        return merged
+
+    async def search_detailed(self, query: str, symbol: str, db_session: AsyncSession, top_k: int = 5) -> tuple[List[RagNewsMetadata], List[RagNewsMetadata], List[RagNewsMetadata]]:
+        """
+        Executes parallel retrieval across FAISS and BM25, and returns (faiss_results, bm25_results, merged_results).
+        """
+        logger.info(f"HybridRetriever | Triggering detailed search for '{symbol}' with query: '{query}'")
 
         # -------------------------------------------------------------
         # Phase 1: Fetch candidate chunks for BM25 from Postgres
@@ -41,8 +48,8 @@ class HybridRetriever:
 
         if not all_chunks:
             logger.warning(f"HybridRetriever | No news chunks found in database for '{symbol}'. Fallback retrieval triggered.")
-            # If no historical metadata exists, return empty list immediately
-            return []
+            # If no historical metadata exists, return empty lists immediately
+            return [], [], []
 
         # -------------------------------------------------------------
         # Phase 2: Load and index candidates into BM25
@@ -83,4 +90,4 @@ class HybridRetriever:
                 merged_results.append(record)
 
         logger.info(f"HybridRetriever | Retained {len(merged_results)} unique chunks after deduplication (limit={top_k})")
-        return merged_results[:top_k]
+        return vector_results, bm25_results, merged_results[:top_k]

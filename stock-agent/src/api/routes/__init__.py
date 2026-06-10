@@ -220,3 +220,6 @@ async def debug_symbol(symbol: str, lookback_days: int = 90) -> Any:
         logger.error("API | Fatal internal server error during /debug: %s", e)
         raise HTTPException(status_code=500, detail="An internal server error occurred while processing the debug request.")
 
+
+from src.api.routes.debug import router as debug_router
+router.include_router(debug_router)
