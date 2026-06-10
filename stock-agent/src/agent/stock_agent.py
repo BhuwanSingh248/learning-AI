@@ -105,6 +105,7 @@ class StockAgent:
                 # 4. Generate AI Decision
                 context_text = ""
                 context_items = []
+                grounding_decision = None
                 if self.rag_retriever:
                     try:
                         async def _fetch():
@@ -114,10 +115,22 @@ class StockAgent:
                         res = await _fetch()
                         context_text = res.formatted_context
                         context_items = res.context_items
+                        if hasattr(res, "grounding") and res.grounding:
+                            grounding_decision = res.grounding
                     except Exception as e:
                         logger.warning("StockAgent | Failed to retrieve RAG context for %s: %s", symbol, e)
 
-                llm_decision: LLMDecision = self.reasoning_engine.make_decision(signals, context_text)
+                # Control Flow: Enforce ALLOW / REFUSE paths based on grounding validation
+                if grounding_decision and not grounding_decision.is_grounded:
+                    logger.warning("StockAgent | Grounding refusal triggered for %s. Bypassing LLM call.", symbol)
+                    llm_decision = LLMDecision(
+                        symbol=symbol,
+                        decision="Neutral",
+                        reason=f"Insufficient evidence available to answer this question reliably. Details: {grounding_decision.reason}"
+                    )
+                else:
+                    llm_decision = self.reasoning_engine.make_decision(signals, context_text)
+
 
                 # 5. Calculate Ranking Score 
                 # Formula: (momentum * 0.4) + (sentiment * 0.4) + (event_score * 0.2)

@@ -24,6 +24,10 @@ from src.rag.embedder import EmbeddingModel
 from src.rag.faiss_store import FAISSStore
 from src.rag.retriever import RAGRetriever
 from src.rag.indexer import NewsIndexer
+from src.rag.bm25_retriever import BM25Retriever
+from src.rag.hybrid_retriever import HybridRetriever
+from src.rag.reranker import Reranker
+from src.rag.grounding import GroundingService
 
 from src.data.providers.marketaux_provider import MarketauxProvider
 from src.data.providers.gnews_provider import GNewsProvider
@@ -47,7 +51,19 @@ reasoning_engine = ReasoningEngine(llm_client)
 
 rag_embedder = EmbeddingModel()
 rag_store = FAISSStore()
-rag_retriever = RAGRetriever(store=rag_store, embedder=rag_embedder)
+bm25_retriever = BM25Retriever()
+hybrid_retriever = HybridRetriever(
+    faiss_store=rag_store,
+    bm25_retriever=bm25_retriever,
+    embedder=rag_embedder
+)
+reranker = Reranker()
+grounding_service = GroundingService()
+rag_retriever = RAGRetriever(
+    hybrid_retriever=hybrid_retriever,
+    reranker=reranker,
+    grounding_service=grounding_service
+)
 news_indexer = NewsIndexer(faiss_store=rag_store, embedder=rag_embedder)
 
 agent = StockAgent(
