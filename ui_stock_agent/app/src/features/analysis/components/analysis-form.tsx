@@ -2,7 +2,9 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
+import { useId } from "react";
 import { useForm } from "react-hook-form";
+import { resolveAnalysisOutcome } from "@/features/analysis/analysis-outcome";
 import {
   analysisFormSchema,
   type AnalysisFormInput,
@@ -15,6 +17,12 @@ export function AnalysisForm() {
   const setLoading = useAnalysisStore((state) => state.setLoading);
   const setSuccess = useAnalysisStore((state) => state.setSuccess);
   const setFailure = useAnalysisStore((state) => state.setFailure);
+  const symbolsId = useId();
+  const symbolsHelpId = useId();
+  const symbolsErrorId = useId();
+  const lookbackId = useId();
+  const lookbackErrorId = useId();
+  const statusId = useId();
 
   const form = useForm<AnalysisFormInput>({
     resolver: zodResolver(analysisFormSchema),
@@ -39,26 +47,8 @@ export function AnalysisForm() {
 
     try {
       const response = await mutation.mutateAsync(request);
-      const missingSymbols = request.symbols.filter(
-        (symbol) => !response.suggestions.some((suggestion) => suggestion.symbol === symbol),
-      );
-
-      if (response.suggestions.length === 0) {
-        setSuccess(request, response, "no-data");
-        return;
-      }
-
-      if (missingSymbols.length > 0) {
-        setSuccess(
-          request,
-          response,
-          "partial-failure",
-          `Missing results for ${missingSymbols.join(", ")}.`,
-        );
-        return;
-      }
-
-      setSuccess(request, response, "success");
+      const outcome = resolveAnalysisOutcome(request, response);
+      setSuccess(request, response, outcome.phase, outcome.message);
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "Unable to analyze symbols right now.";
@@ -84,31 +74,46 @@ export function AnalysisForm() {
         <label className="block space-y-2">
           <span className="text-sm font-medium text-ink">Symbols</span>
           <textarea
+            id={symbolsId}
             rows={5}
+            aria-describedby={`${symbolsHelpId}${symbolsError ? ` ${symbolsErrorId}` : ""}`}
+            aria-invalid={Boolean(symbolsError)}
             className="w-full rounded-3xl border border-white/10 bg-white/5 px-4 py-4 text-sm text-ink outline-none transition placeholder:text-mist/60 focus:border-flare/60 focus:ring-2 focus:ring-flare/20"
             placeholder="AAPL, MSFT, NVDA"
             {...form.register("symbolsText")}
           />
-          <span className="text-xs text-mist">
+          <span id={symbolsHelpId} className="text-xs text-mist">
             Separate symbols with commas, spaces, or new lines.
           </span>
-          {symbolsError ? <p className="text-sm text-ember">{symbolsError}</p> : null}
+          {symbolsError ? (
+            <p id={symbolsErrorId} className="text-sm text-ember" role="alert">
+              {symbolsError}
+            </p>
+          ) : null}
         </label>
 
         <label className="block space-y-2">
           <span className="text-sm font-medium text-ink">Lookback days</span>
           <input
+            id={lookbackId}
             type="number"
+            aria-describedby={lookbackError ? lookbackErrorId : undefined}
+            aria-invalid={Boolean(lookbackError)}
             className="w-full rounded-full border border-white/10 bg-white/5 px-4 py-3 text-sm text-ink outline-none transition focus:border-flare/60 focus:ring-2 focus:ring-flare/20"
             {...form.register("lookbackDays", { valueAsNumber: true })}
           />
-          {lookbackError ? <p className="text-sm text-ember">{lookbackError}</p> : null}
+          {lookbackError ? (
+            <p id={lookbackErrorId} className="text-sm text-ember" role="alert">
+              {lookbackError}
+            </p>
+          ) : null}
         </label>
 
         <div className="flex flex-wrap items-center gap-3 pt-2">
           <button
             type="submit"
             disabled={mutation.isPending}
+            aria-describedby={statusId}
             className="rounded-full bg-flare px-5 py-3 text-sm font-semibold text-slate-950 transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {mutation.isPending ? "Running analysis..." : "Analyze symbols"}
@@ -122,6 +127,10 @@ export function AnalysisForm() {
             Reset form
           </button>
         </div>
+
+        <p id={statusId} className="sr-only" role="status" aria-live="polite">
+          {mutation.isPending ? "Analysis request is running." : "Analysis form is ready."}
+        </p>
       </form>
     </section>
   );

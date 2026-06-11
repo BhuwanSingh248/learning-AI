@@ -1,6 +1,8 @@
 "use client";
 
+import { useMutation } from "@tanstack/react-query";
 import Link from "next/link";
+import React from "react";
 import {
   Bar,
   BarChart,
@@ -10,7 +12,9 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import { resolveAnalysisOutcome } from "@/features/analysis/analysis-outcome";
 import { DecisionBadge } from "@/features/analysis/components/decision-badge";
+import { suggestStocks } from "@/services/stock-agent";
 import { useAnalysisStore } from "@/store/analysis-store";
 import type { SuggestionItem } from "@/types/stock";
 
@@ -82,6 +86,12 @@ function EmptyState() {
 
 export function ResultsPanel() {
   const { phase, response, request, errorMessage } = useAnalysisStore((state) => state);
+  const setLoading = useAnalysisStore((state) => state.setLoading);
+  const setSuccess = useAnalysisStore((state) => state.setSuccess);
+  const setFailure = useAnalysisStore((state) => state.setFailure);
+  const retryMutation = useMutation({
+    mutationFn: suggestStocks,
+  });
   const ragEnabledCount =
     response?.suggestions.filter((suggestion) => suggestion.rag?.enabled).length ?? 0;
   const hasPhase7Fields =
@@ -92,8 +102,27 @@ export function ResultsPanel() {
         suggestion.signalBreakdown,
     ) ?? false;
 
+  async function retryLastRequest() {
+    if (!request) {
+      return;
+    }
+
+    setLoading(request);
+
+    try {
+      const nextResponse = await retryMutation.mutateAsync(request);
+      const outcome = resolveAnalysisOutcome(request, nextResponse);
+      setSuccess(request, nextResponse, outcome.phase, outcome.message);
+    } catch (error) {
+      setFailure(
+        request,
+        error instanceof Error ? error.message : "Unable to analyze symbols right now.",
+      );
+    }
+  }
+
   return (
-    <section className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
+    <section className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]" aria-live="polite">
       <div className="rounded-[30px] border border-white/10 bg-[var(--surface)] p-6 shadow-panel backdrop-blur">
         <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
           <div className="space-y-2">
@@ -110,7 +139,7 @@ export function ResultsPanel() {
         {phase === "idle" ? <EmptyState /> : null}
 
         {phase === "loading" ? (
-          <div className="grid gap-4">
+          <div className="grid gap-4" role="status" aria-label="Analysis results are loading">
             {Array.from({ length: 3 }).map((_, index) => (
               <div
                 key={index}
@@ -121,9 +150,22 @@ export function ResultsPanel() {
         ) : null}
 
         {phase === "failure" ? (
-          <div className="rounded-[30px] border border-ember/20 bg-ember/10 p-6 text-sm text-rose-100">
+          <div
+            className="rounded-[30px] border border-ember/20 bg-ember/10 p-6 text-sm text-rose-100"
+            role="alert"
+          >
             <p className="font-semibold">The analysis request failed.</p>
             <p className="mt-2 text-rose-100/80">{errorMessage}</p>
+            {request ? (
+              <button
+                type="button"
+                onClick={retryLastRequest}
+                disabled={retryMutation.isPending}
+                className="mt-5 rounded-full bg-flare px-4 py-2 text-sm font-semibold text-slate-950 transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {retryMutation.isPending ? "Retrying..." : "Retry last request"}
+              </button>
+            ) : null}
           </div>
         ) : null}
 
@@ -148,7 +190,10 @@ export function ResultsPanel() {
             )}
 
             {phase === "partial-failure" ? (
-              <div className="rounded-[24px] border border-sun/20 bg-sun/10 px-4 py-3 text-sm text-sun">
+              <div
+                className="rounded-[24px] border border-sun/20 bg-sun/10 px-4 py-3 text-sm text-sun"
+                role="status"
+              >
                 Some requested symbols did not return results. The UI is still surfacing the
                 symbols that did.
               </div>
@@ -215,7 +260,7 @@ export function ResultsPanel() {
         </div>
 
         {response?.suggestions.length ? (
-          <div className="h-[340px]">
+          <div className="h-[340px]" role="img" aria-label="Score spread by stock symbol">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
                 data={response.suggestions}
