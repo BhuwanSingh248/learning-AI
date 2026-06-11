@@ -34,7 +34,7 @@ import faiss
 import numpy as np
 from sqlalchemy.future import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from datetime import datetime
+from datetime import datetime, timezone
 
 from src.rag.models import RagNewsMetadata
 from src.config.logger import setup_logger
@@ -113,6 +113,10 @@ class FAISSStore:
         # Ensure shape matches FAISS batch input requirement (1, dim)
         if len(vector.shape) == 1:
             vector = vector.reshape(1, -1)
+
+        # Convert timestamp to offset-naive UTC to avoid postgres TIMESTAMP WITHOUT TIME ZONE offset issues
+        if timestamp.tzinfo is not None:
+            timestamp = timestamp.astimezone(timezone.utc).replace(tzinfo=None)
 
         # 1. Insert Metadata into Database
         metadata = RagNewsMetadata(chunk_id=chunk_id, source_id=source_id,  symbol=symbol, chunk_index=chunk_index, chunk_text=chunk_text, timestamp=timestamp)
