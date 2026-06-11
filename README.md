@@ -97,7 +97,7 @@ flowchart TD
 * **Citation-Aware Prompts:** If rules pass, the system generates sequentially numbered bracketed citations (`[1]`, `[2]`) pointing back to source publication dates and IDs.
 
 ### 5. Local LLM Reasoning
-* **Private Offline Inference:** Prompts containing technical signals and formatted citation context are processed by a local `Ollama` server running the `phi3:mini` model. Output text is processed dynamically using Regex.
+* **Private Offline Inference:** Prompts containing technical signals and formatted citation context are processed by a local `Ollama` server running the `phi3:mini` model. Output text is parsed dynamically using Regex.
 
 ---
 
