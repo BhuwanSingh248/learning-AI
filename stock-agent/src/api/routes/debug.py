@@ -117,7 +117,8 @@ async def debug_grounding(request: DebugGroundingRequest, db: AsyncSession = Dep
         candidate_count = len(ranked_pairs)
         best_score = float(ranked_pairs[0][1]) if candidate_count > 0 else 0.0
         scores = [score for chunk, score in ranked_pairs]
-        average_score = float(sum(scores) / candidate_count) if candidate_count > 0 else 0.0
+        top_scores = scores[:3]
+        average_score = float(sum(top_scores) / len(top_scores)) if len(top_scores) > 0 else 0.0
         
         return DebugGroundingResponse(
             is_grounded=decision.is_grounded,

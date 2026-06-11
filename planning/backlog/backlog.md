@@ -26,3 +26,7 @@ The following technical items and structural plans have been bypassed entirely d
 ## 4. Enhanced Portfolio & Tools Expansion
 - **Extended Signals:** Include explicit charting/signal dependencies like RSI, MACD, and Bollinger Bands into the `PriceAnalyzer`.
 - **Advanced Agent Tooling:** Build out direct functional calling abilities in the event we map Mistral or another LLM directly into an agentic framework requiring `get_price()`, `calculate_dcf()`, etc. instead of our strictly guided deterministic logic chains.
+
+## 5. Automated Grounding Calibration
+- **Self-Tuning Thresholds:** Implement dynamic symbol resolution and automated classification F1-Score search to dynamically calibrate `GroundingService` thresholds. Detailed requirements are documented in [automated_grounding_calibration.md](file:///c:/Users/bhuwa/study/ai_stock_market/planning/backlog/automated_grounding_calibration.md).
+

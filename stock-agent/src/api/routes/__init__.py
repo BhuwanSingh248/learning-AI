@@ -10,6 +10,7 @@ from typing import Any
 
 from src.config.logger import setup_logger
 from src.api.schemas import SuggestRequest, SuggestResponse, SuggestionItem, HealthResponse, HealthCheckItem
+from src.config.settings import settings
 
 from src.data.providers.openbb_provider import OpenBBProvider
 from src.data.services.data_service import DataService
@@ -58,7 +59,11 @@ hybrid_retriever = HybridRetriever(
     embedder=rag_embedder
 )
 reranker = Reranker()
-grounding_service = GroundingService()
+grounding_service = GroundingService(
+    min_score_threshold=settings.GROUNDING_MIN_SCORE,
+    min_chunks=settings.GROUNDING_MIN_CHUNKS,
+    min_average_threshold=settings.GROUNDING_MIN_TOP3_AVERAGE
+)
 rag_retriever = RAGRetriever(
     hybrid_retriever=hybrid_retriever,
     reranker=reranker,
