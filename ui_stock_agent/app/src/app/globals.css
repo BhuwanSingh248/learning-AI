@@ -47,6 +47,22 @@ textarea {
   font: inherit;
 }
 
+:focus-visible {
+  outline: 3px solid rgba(94, 242, 199, 0.9);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
 ::selection {
   background: rgba(94, 242, 199, 0.25);
 }

@@ -9,6 +9,7 @@ const decisionStyles: Record<string, string> = {
 export function DecisionBadge({ decision }: { decision: SuggestionDecision }) {
   return (
     <span
+      aria-label={`Decision: ${decision}`}
       className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] ${
         decisionStyles[decision.toLowerCase()] ?? "bg-white/10 text-ink ring-1 ring-white/10"
       }`}

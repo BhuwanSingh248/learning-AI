@@ -3,6 +3,9 @@
 import Link from "next/link";
 import { DecisionBadge } from "@/features/analysis/components/decision-badge";
 import { useAnalysisStore } from "@/store/analysis-store";
+import type { SuggestionItem } from "@/types/stock";
+
+const EMPTY_SUGGESTIONS: SuggestionItem[] = [];
 
 function formatPercent(value?: number) {
   if (typeof value !== "number") {
@@ -14,7 +17,9 @@ function formatPercent(value?: number) {
 }
 
 function PredictionPanel() {
-  const suggestions = useAnalysisStore((state) => state.response?.suggestions ?? []);
+  const suggestions = useAnalysisStore(
+    (state) => state.response?.suggestions ?? EMPTY_SUGGESTIONS,
+  );
 
   if (!suggestions.length) {
     return (
@@ -79,7 +84,9 @@ function PredictionPanel() {
 }
 
 function RagActivityPanel() {
-  const suggestions = useAnalysisStore((state) => state.response?.suggestions ?? []);
+  const suggestions = useAnalysisStore(
+    (state) => state.response?.suggestions ?? EMPTY_SUGGESTIONS,
+  );
 
   if (!suggestions.length) {
     return (
