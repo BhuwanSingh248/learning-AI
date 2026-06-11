@@ -1,6 +1,6 @@
 # 🚀 MVP 1: AI Stock Recommendation Agent - Consolidated Master Technical Task Log
 
-This document consolidates the end-to-end development history, architectural design specifications, and validation checklists of the AI Stock Agent MVP. It merges foundational milestones, Advanced RAG design specifications (Steps 1 to 6.4), the E2E Validation Plan (Test Groups 1-13), the Final Audit criteria, and production calibration metrics.
+This document consolidates the end-to-end development history, architectural design specifications, and validation checklists of the AI Stock Agent MVP. It merges foundational milestones, Advanced RAG design specifications (Steps 1 to 6.4), the E2E Validation Plan (Test Groups 1-13), the Final Audit criteria, Debug Endpoint Generation, API Capability audits, and production calibration metrics.
 
 ---
 
@@ -43,6 +43,15 @@ flowchart TD
     Check3 -- Yes --> Allow["ALLOW Path (Context Builder -> LLM Execution)"]
 ```
 
+### 4. API Verification Flow
+```mermaid
+graph TD
+    A[POST /debug/retrieval] -->|Inspect BM25 vs FAISS results| B[POST /debug/rerank]
+    B -->|Inspect Cross-Encoder scores| C[POST /debug/grounding]
+    C -->|Inspect grounding rules gating| D[POST /suggest]
+    D -->|E2E recommendation response| E[Validation Successful]
+```
+
 ---
 
 ## 🏗️ Section 1 — Foundational Milestones (Phases 1-6)
@@ -72,10 +81,10 @@ flowchart TD
   * **Signal Engineering:** Developed modular analyzers inside [market_analyzer.py](file:///c:/Users/bhuwa/study/ai_stock_market/stock-agent/src/analysis/market_analyzer.py):
     * `PriceAnalyzer`: Calculates SMA trend directions, Momentum (5-day return), and Volatility (Standard Deviation).
     * `NewsAnalyzer`: Derives text sentiment scores (-1.0 to 1.0) using deterministic keyword matches.
-    * `EventAnalyzer`: Scores corporate activities (split events, dividends, earnings updates).
+    * `EventAnalyzer`: Scores corporate actions (split events, dividends, earnings updates).
 
 ### Phase 4 — LLM Reasoning Integration
-* **Objective:** Expose signal matrices to the local LLM to generate recommendations.
+* **Objective:** Connect signals to the local LLM for structured analysis decisions.
 * **Specifications:**
   * **LLM Client:** Implemented [LLMClient](file:///c:/Users/bhuwa/study/ai_stock_market/stock-agent/src/llm/llm_client.py) calling Ollama's generating endpoint with connection timeout handling.
   * **Prompt Design:** Built `PromptBuilder` to format signals into a structured financial prompt.
@@ -97,7 +106,7 @@ flowchart TD
 
 ---
 
-## 🧠 Section 3 — Advanced RAG Pipeline Tasks (Steps 1-6.4)
+## 🧠 Section 2 — Advanced RAG Pipeline Tasks (Steps 1-6.4)
 
 ### 📋 Task 1 — News Chunking & Token Estimation (Step 1)
 * **Objective:** Implement a deterministic text splitter preserving sentence coherence and carrying semantic overlap.
@@ -162,13 +171,13 @@ flowchart TD
   * **Reranker Module:** [reranker.py](file:///c:/Users/bhuwa/study/ai_stock_market/stock-agent/src/rag/reranker.py) exposing `rerank(query: str, candidates: List[RagNewsMetadata], top_k: int)`.
   * **Interface Contracts:** Reranker remains retrieval-source agnostic. Accepts any retrieved chunk list, generates similarity logits, sorts descending, and returns the top results.
 
-### 📋 Task 5 — Grounding Gating & Citation Context (Step 5)
-* **Objective:** Apply strict logical rules to verify retrieval quality, build trace-back citations, or bypass the LLM early on failures.
+### 📋 Task 5 — Grounding Gating & LLM Bypass Flow (Step 5)
+* **Objective:** Prevent LLM hallucinations by verifying context quality and skipping prompt building if evidence is weak.
 * **Implementation Rules:**
-  * **Grounding Gating Rules:** Expose thresholds in `settings.py` and enforce them dynamically:
-    1. **Density Gate:** Verify candidate chunk count $\ge$ `GROUNDING_MIN_CHUNKS` (default 1).
-    2. **Peak Gate:** Verify that the single highest reranker logit score is $\ge$ `GROUNDING_MIN_SCORE` (tuned to `-5.0`).
-    3. **Average Quality Gate:** Verify that the average logit score of the Top-3 reranker chunks is $\ge$ `GROUNDING_MIN_TOP3_AVERAGE` (tuned to `-9.0`).
+  * **Grounding Service:** [grounding.py](file:///c:/Users/bhuwa/study/ai_stock_market/stock-agent/src/rag/grounding.py) applying deterministic validation rules:
+    * **Rule 1 (Density):** Candidate count $\ge$ `GROUNDING_MIN_CHUNKS` (default 1).
+    * **Rule 2 (Peak Relevance):** Best logit score $\ge$ `GROUNDING_MIN_SCORE` (tuned to `-5.0`).
+    * **Rule 3 (Average Quality):** Average of the Top-3 scores $\ge$ `GROUNDING_MIN_TOP3_AVERAGE` (tuned to `-9.0`).
   * **ALLOW Execution Path:** If grounding checks pass:
     * Map chunks to sequential `[1]`, `[2]`, `[3]` bracketed numbers using [context_builder.py](file:///c:/Users/bhuwa/study/ai_stock_market/stock-agent/src/rag/context_builder.py).
     * Format context output displaying: `[1] Source: {source_id} (Date) | {chunk_text}`.
@@ -179,21 +188,45 @@ flowchart TD
     * Bypass local LLM execution.
     * Immediately return a structured `Neutral` decision and explanation back to the REST client: *"Insufficient evidence available to answer this question reliably."*
 
-### 📋 Task 6 — API Endpoints & Calibration Tuning (Step 6)
-* **Objective:** Expose validation routes, run live calibration loops, and configure production settings.
-* **Implementation Rules:**
-  * **REST Route Integrations:**
-    * `POST /debug/retrieval`: Returns raw FAISS, BM25, and merged candidate arrays separately.
-    * `POST /debug/rerank`: Returns candidate chunks sorted by Cross-Encoder logit scores.
-    * `POST /debug/grounding`: Breaks down rule decisions (ALLOW/REFUSE) alongside best score and Top-3 average score metrics.
-    * `/health`: dynamic readiness probes checking PostgreSQL connection, FAISS index status, and Ollama tags.
-  * **Calibration Query Generation:** Map raw stock exchange tickers to clean company names (e.g. `INFY` $\rightarrow$ `Infosys`, `RELIANCE.NS` $\rightarrow$ `Reliance Industries`) for semantic retrieval query generation, recorded in [calibration_report.md](file:///c:/Users/bhuwa/study/ai_stock_market/stock-agent/calibration_report.md) and [calibration_results.json](file:///c:/Users/bhuwa/study/ai_stock_market/stock-agent/calibration_results.json).
+---
+
+## 🌐 Section 3 — Debug Endpoint Generation & Coverage Review
+
+### 📋 Task 6 — Debug API Endpoints & Request/Response Models (endpoint_generation.md)
+* **Objective:** Expose internal pipeline components via specialized FastAPI endpoints for isolated debugging.
+* **Specifications:**
+  * **Schemas ([debug.py](file:///c:/Users/bhuwa/study/ai_stock_market/stock-agent/src/api/schemas/debug.py)):**
+    * Request Models: `DebugRetrievalRequest`, `DebugRerankRequest`, `DebugGroundingRequest` all containing: `symbol: str`, `query: str`, and `top_k: int = 10`.
+    * Response Models:
+      * `RetrievedChunkResponse`: `chunk_id`, `symbol`, `source_id`, `timestamp: str | None`, `chunk_text`.
+      * `DebugRetrievalResponse`: `faiss_results`, `bm25_results`, `merged_results` separately.
+      * `RerankedChunkResponse`: `chunk_id`, `score: float`, `chunk_text`.
+      * `DebugRerankResponse`: `reranked_chunks: list[RerankedChunkResponse]`.
+      * `DebugGroundingResponse`: `is_grounded: bool`, `confidence_score: float`, `reason: str`, `candidate_count: int`, `best_score: float`, `average_score: float`.
+  * **API Implementation ([routes/debug.py](file:///c:/Users/bhuwa/study/ai_stock_market/stock-agent/src/api/routes/debug.py)):**
+    * `POST /debug/retrieval`: Returns raw FAISS, BM25, and merged candidates for checking query matching logic.
+    * `POST /debug/rerank`: Fetches candidates (Top-K * 4 pool) and runs neural Cross-Encoder scoring.
+    * `POST /debug/grounding`: Runs Grounding evaluation rules on candidates, outputting step calculations.
+  * **Router Registration:** Registered in [routes/__init__.py](file:///c:/Users/bhuwa/study/ai_stock_market/stock-agent/src/api/routes/__init__.py) under `app.include_router(debug_router)`. Verified availability inside FastAPI Swagger `/docs`.
+
+### 📋 Task 7 — API Capability Audit & Feature Mapping (endpoint_coverage_audit.md)
+* **Objective:** Audit the feature map to identify exposed, partially exposed, and unexposed subsystems.
+* **Specifications:**
+  * **Feature Mapping Matrix:**
+    * `FAISS Vector Search`: **EXPOSED** (via `POST /debug/retrieval`)
+    * `BM25 Retrieval`: **EXPOSED** (via `POST /debug/retrieval`)
+    * `Hybrid Retrieval`: **EXPOSED** (via `POST /debug/retrieval`)
+    * `Rerank Engine`: **EXPOSED** (via `POST /debug/rerank`)
+    * `Grounding Gate`: **EXPOSED** (via `POST /debug/grounding`)
+    * `Recommendation Engine`: **EXPOSED** (via `POST /suggest`)
+    * `Chunking` / `Embedding`: **NOT EXPOSED** (internals used implicitly during news parsing and vector storage)
+  * **Calibration Query Tuning:** Map stock exchange tickers to clean company names (e.g. `INFY` $\rightarrow$ `Infosys`, `RELIANCE.NS` $\rightarrow$ `Reliance Industries`) for semantic retrieval query generation, recorded in [calibration_report.md](file:///c:/Users/bhuwa/study/ai_stock_market/stock-agent/calibration_report.md) and [calibration_results.json](file:///c:/Users/bhuwa/study/ai_stock_market/stock-agent/calibration_results.json).
 
 ---
 
 ## 🔍 Section 4 — Architectural Final Audit (ph_1_audit.md Roadmap)
 
-### 📋 Task 7 — Component Integration & Verification Audit
+### 📋 Task 8 — Component Integration & Verification Audit
 * **Objective:** Run a full structural audit to identify missing links, instantiate dependencies properly, and weed out orphaned classes.
 * **Audit Checklists & Rules:**
   * **Mermaid Design Map Validation:** Verify the codebase strictly implements the actual pipeline: Ingestion $\rightarrow$ Chunker $\rightarrow$ Embedder $\rightarrow$ FAISS/Postgres $\rightarrow$ Hybrid $\rightarrow$ Rerank $\rightarrow$ Grounding $\rightarrow$ CitationContextBuilder $\rightarrow$ LLM.
@@ -213,7 +246,7 @@ flowchart TD
 
 ## 🧪 Section 5 — End-to-End Validation Plan (E2E_test_1.md Roadmap)
 
-### 📋 Task 8 — E2E Test Suite & Latency Baselines
+### 📋 Task 9 — E2E Test Suite & Latency Baselines
 * **Objective:** Run modular test groups verifying pipeline parts in isolation and together, recording performance indicators.
 * **Verification Checklist (Test Groups 1-13):**
   * **Group 1 (Chunking):** Verify sentence splits, overlap bounds, character token estimation.
