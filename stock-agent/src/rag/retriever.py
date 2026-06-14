@@ -34,42 +34,6 @@ from src.rag.faiss_store import FAISSStore
 from src.config.logger import setup_logger
 
 logger = setup_logger(__name__)
-
-
-@dataclass(frozen=True)
-class RetrievalResult:
-    """
-    The value object returned by the RAG layer.
-
-    Attributes
-    ----------
-    symbol : str
-        The ticker for which context was retrieved.
-    items : list[str]
-        Ordered list of relevant news snippets (most-similar first).
-        Each element is a short, human-readable string ready to be
-        appended verbatim to the LLM prompt.
-    """
-    symbol: str
-    items: list[str] = field(default_factory=list)
-    context_items: list[dict] = field(default_factory=list)
-
-    @property
-    def formatted_context(self) -> str:
-        """
-        Formats the retrieved items into an LLM-friendly block.
-        Fallback handling is implemented here if `items` is empty.
-        """
-        if not self.items:
-            return "No significant recent news found."
-        
-        lines = ["Recent News:\n"]
-        for idx, item in enumerate(self.items, 1):
-            lines.append(f"{idx}. {item}")
-            
-        return "\n".join(lines)
-
-
 from src.rag.hybrid_retriever import HybridRetriever
 from src.rag.reranker import Reranker
 from src.rag.grounding import GroundingService
