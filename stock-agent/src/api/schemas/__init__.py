@@ -7,7 +7,7 @@ Defines the Input/Output Pydantic contracts for the HTTP Application layer.
 from typing import List, Optional, Any, Dict
 from pydantic import BaseModel, Field
 from src.data.models import Citation
-
+from src.metrics.models import PipelineMetrics
 
 
 class SuggestRequest(BaseModel):
@@ -62,6 +62,8 @@ class SuggestionItem(BaseModel):
     signal_breakdown: Optional[SignalBreakdown] = None
     rag: Optional[RagDebugInfo] = None
     prediction: Optional[PredictionMeta] = None
+    metrics: Optional[PipelineMetrics] = None
+
 
 
 class SuggestResponse(BaseModel):
@@ -100,4 +102,6 @@ class AnalyzeResponse(BaseModel):
     confidence_score: float
     citations: List[Citation]
     diagnostics: Optional[dict] = None
+    metrics: Optional[PipelineMetrics] = None
+
 

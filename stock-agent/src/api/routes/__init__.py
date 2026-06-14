@@ -22,6 +22,8 @@ from src.api.schemas import (
 )
 from src.config.settings import settings
 from src.llm.prompt_builder import PromptBuilder
+from src.metrics import MetricsCollector
+
 
 
 from src.data.providers.openbb_provider import OpenBBProvider
@@ -129,18 +131,26 @@ async def analyze_query(request: AnalyzeRequest, db: AsyncSession = Depends(get_
     Runs user query driven stock analysis pipeline.
     """
     logger.info("API | Received /analyze request for symbol: %s, query: '%s'", request.symbol, request.query)
+    
+    metrics = MetricsCollector()
+    metrics.start_stage("total")
+    
     try:
         # Retrieve context from RAG layer using the user's custom query and top_k
         citation_context = await rag_retriever.retrieve(
             symbol=request.symbol.upper(),
             db_session=db,
             query=request.query,
-            top_k=request.top_k
+            top_k=request.top_k,
+            metrics=metrics
         )
         
         grounding_decision = citation_context.grounding
         is_grounded = grounding_decision.is_grounded if grounding_decision else False
         confidence_score = grounding_decision.confidence_score if grounding_decision else 0.0
+        
+        # Ensure grounded status is set on the metrics object
+        metrics.set_grounded(is_grounded)
         
         # Build diagnostics dictionary
         diagnostics = {
@@ -152,28 +162,64 @@ async def analyze_query(request: AnalyzeRequest, db: AsyncSession = Depends(get_
         
         if not is_grounded:
             refusal_reason = grounding_decision.reason if grounding_decision else "Grounding failed."
+            metrics.end_stage("total")
+            symbol_metrics = metrics.get_metrics()
+            
+            # structured logging
+            logger.info(
+                "[METRICS] Symbol=%s Total=%.1fms Retrieval=%.1fms Reranker=%.1fms Grounding=%.1fms LLM=0.0ms Grounded=False",
+                request.symbol.upper(),
+                symbol_metrics.total_duration_ms,
+                symbol_metrics.retrieval_duration_ms,
+                symbol_metrics.reranker_duration_ms,
+                symbol_metrics.grounding_duration_ms
+            )
+            
             return AnalyzeResponse(
                 answer=f"Insufficient evidence available to answer this question reliably. Details: {refusal_reason}",
                 grounded=False,
                 confidence_score=confidence_score,
                 citations=[],
-                diagnostics=diagnostics
+                diagnostics=diagnostics,
+                metrics=symbol_metrics
             )
             
         # If grounded, build prompt and call LLM
+        metrics.start_stage("prompt_build")
         prompt = PromptBuilder.build_custom_query_prompt(request.query, citation_context.formatted_text)
+        metrics.end_stage("prompt_build")
+        
+        metrics.start_stage("llm")
+        metrics.set_model_name(llm_client.model_name)
         answer = llm_client.generate_response(prompt)
+        metrics.end_stage("llm")
+        
+        metrics.end_stage("total")
+        symbol_metrics = metrics.get_metrics()
+        
+        # structured logging
+        logger.info(
+            "[METRICS] Symbol=%s Total=%.1fms Retrieval=%.1fms Reranker=%.1fms Grounding=%.1fms LLM=%.1fms Grounded=True",
+            request.symbol.upper(),
+            symbol_metrics.total_duration_ms,
+            symbol_metrics.retrieval_duration_ms,
+            symbol_metrics.reranker_duration_ms,
+            symbol_metrics.grounding_duration_ms,
+            symbol_metrics.llm_duration_ms
+        )
         
         return AnalyzeResponse(
             answer=answer,
             grounded=True,
             confidence_score=confidence_score,
             citations=citation_context.citations,
-            diagnostics=diagnostics
+            diagnostics=diagnostics,
+            metrics=symbol_metrics
         )
     except Exception as e:
         logger.error("API | Fatal error in /analyze: %s", e)
         raise HTTPException(status_code=500, detail=f"Internal server error: {e}")
+
 
 
 @router.get("/health", response_model=HealthResponse)
