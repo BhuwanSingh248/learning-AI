@@ -1,4 +1,5 @@
 from typing import List, Tuple
+from src.config.settings import settings
 from src.data.models import GroundingDecision
 from src.rag.models import RagNewsMetadata
 from src.config.logger import setup_logger
@@ -14,10 +15,11 @@ class GroundingService:
 
     def __init__(
         self,
-        min_score_threshold: float = 0.0,
-        min_chunks: int = 1,
-        min_average_threshold: float = -1.0
+        min_score_threshold: float = settings.GROUNDING_MIN_SCORE,
+        min_chunks: int = settings.GROUNDING_MIN_CHUNKS,
+        min_average_threshold: float = settings.GROUNDING_MIN_AVERAGE_SCORE
     ) -> None:
+
         """
         Args:
             min_score_threshold: Minimum Cross-Encoder score needed for the top candidate.
