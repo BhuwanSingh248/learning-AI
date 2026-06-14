@@ -37,7 +37,7 @@ class Settings:
 
     # grounding settings
     GROUNDING_MIN_SCORE: float = float(os.getenv("GROUNDING_MIN_SCORE", "-5.0"))
-    GROUNDING_MIN_TOP3_AVERAGE: float = float(os.getenv("GROUNDING_MIN_TOP3_AVERAGE", "-8.0"))
+    GROUNDING_MIN_AVERAGE_SCORE: float = float(os.getenv("GROUNDING_MIN_AVERAGE_SCORE", "-9.0"))
     GROUNDING_MIN_CHUNKS: int = int(os.getenv("GROUNDING_MIN_CHUNKS", "1"))
 
 # Instantiate settings to be used across the app

@@ -45,12 +45,11 @@ NOTE (Phase 7.1):
 from src.rag.embedder import EMBEDDING_DIM, MODEL_NAME, EmbeddingModel
 from src.rag.models import RagNewsMetadata
 from src.rag.faiss_store import FAISSStore
-from src.rag.retriever import RAGRetriever, RetrievalResult
+from src.rag.retriever import RAGRetriever
 
 __all__ = [
     # Phase 7.1 — design stubs
     "RAGRetriever",
-    "RetrievalResult",
     # Phase 7.2 — embedding layer
     "EmbeddingModel",
     "MODEL_NAME",
@@ -59,3 +58,4 @@ __all__ = [
     "RagNewsMetadata",
     "FAISSStore",
 ]
+

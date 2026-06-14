@@ -14,6 +14,8 @@ from src.llm.llm_client import LLMClient
 from src.llm.prompt_builder import PromptBuilder
 from src.config.logger import setup_logger
 
+from src.metrics.service import MetricsCollector
+
 logger = setup_logger(__name__)
 
 
@@ -39,17 +41,27 @@ class ReasoningEngine:
         """
         self.llm_client = llm_client
 
-    def make_decision(self, signals: CombinedMarketSignal, context_text: str = "") -> LLMDecision:
+    def make_decision(self, signals: CombinedMarketSignal, context_text: str = "", metrics: MetricsCollector | None = None) -> LLMDecision:
         """
         Full reasoning pipeline: Signals -> Prompt -> LLM -> Structured Decision.
         """
         logger.info("ReasoningEngine | Making decision for %s", signals.symbol)
         
         # 1. Generate Prompt
+        if metrics:
+            metrics.start_stage("prompt_build")
         prompt = PromptBuilder.build_financial_reasoning_prompt(signals, context_text)
+        if metrics:
+            metrics.end_stage("prompt_build")
         
         # 2. Query LLM
+        if metrics:
+            metrics.start_stage("llm")
+            metrics.set_model_name(self.llm_client.model_name)
         raw_response = self.llm_client.generate_response(prompt)
+        if metrics:
+            metrics.end_stage("llm")
+
         
         # 3. Parse Structurally
         return self._parse_response(raw_response, signals.symbol)

@@ -59,3 +59,20 @@ class PromptBuilder:
 
         final_prompt = f"--- START OF DATA ---\n{data_context}\n--- END OF DATA ---\n\n{instructions}"
         return final_prompt
+
+    @staticmethod
+    def build_custom_query_prompt(query: str, context_text: str) -> str:
+        """
+        Creates a structured prompt from custom user queries and news context.
+        """
+        instructions = (
+            "You are a professional financial analyst.\n"
+            f"Answer the user's question: '{query}'\n"
+            "Based ONLY on the provided news context below. Do not use any external information or assumptions.\n"
+            "Cite the source chunks using their bracketed numbers (e.g. [1], [2]) when referencing facts.\n"
+            "If the context does not contain enough information to answer the question, state that clearly.\n"
+            "Keep your answer concise and directly supported by the context.\n"
+        )
+        final_prompt = f"--- START OF CONTEXT ---\n{context_text}\n--- END OF CONTEXT ---\n\n{instructions}"
+        return final_prompt
+
