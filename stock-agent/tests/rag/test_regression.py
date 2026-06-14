@@ -184,3 +184,66 @@ def test_refusal_path():
         assert data["grounded"] is False
         assert data["confidence_score"] == -8.5
         assert len(data["citations"]) == 0
+
+
+from src.metrics import MetricsCollector
+
+def test_metrics_collection():
+    """
+    Verify stateful metrics collection via MetricsCollector.
+    """
+    metrics = MetricsCollector()
+    metrics.start_stage("retrieval")
+    import time
+    time.sleep(0.005)  # sleep 5ms
+    metrics.end_stage("retrieval")
+    metrics.set_count("chunks_retrieved", 4)
+    metrics.set_grounded(True)
+    metrics.set_model_name("phi3:mini")
+    
+    payload = metrics.get_metrics()
+    assert payload.retrieval_duration_ms > 0.0
+    assert payload.chunks_retrieved == 4
+    assert payload.grounded is True
+    assert payload.model_name == "phi3:mini"
+
+def test_api_metrics_returned():
+    """
+    Verify that /analyze and /debug/analyze endpoints return metrics correctly.
+    """
+    client = TestClient(app)
+    
+    with patch("src.api.routes.rag_retriever.retrieve") as mock_retrieve, \
+         patch("src.api.routes.llm_client.generate_response") as mock_generate:
+        
+        mock_decision = GroundingDecision(is_grounded=True, reason="Passed", confidence_score=-1.0)
+        mock_retrieve.return_value = CitationContext(
+            formatted_text="[1] Context",
+            citations=[
+                Citation(citation_id=1, chunk_id="c1", source_id="S1", timestamp="2026-06-14", text_preview="Ctx")
+            ],
+            grounding=mock_decision
+        )
+        mock_generate.return_value = "Answer"
+        
+        # Test /analyze public endpoint
+        response = client.post(
+            "/analyze",
+            json={"symbol": "INFY", "query": "Should I buy?", "top_k": 5}
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert "metrics" in data
+        assert data["metrics"]["retrieval_duration_ms"] is not None
+        assert data["metrics"]["grounded"] is True
+        
+        # Test /debug/analyze endpoint
+        debug_response = client.post(
+            "/debug/analyze",
+            json={"symbol": "INFY", "query": "Should I buy?", "top_k": 5}
+        )
+        assert debug_response.status_code == 200
+        debug_data = debug_response.json()
+        assert "metrics" in debug_data
+        assert debug_data["metrics"]["retrieval_duration_ms"] is not None
+
