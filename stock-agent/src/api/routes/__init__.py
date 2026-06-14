@@ -5,12 +5,24 @@ Defines the FastAPI routes exposing the underlying orchestrated StockAgent
 to HTTP requests securely.
 """
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from typing import Any
+from sqlalchemy.ext.asyncio import AsyncSession
+from src.config.database import get_db
 
 from src.config.logger import setup_logger
-from src.api.schemas import SuggestRequest, SuggestResponse, SuggestionItem, HealthResponse, HealthCheckItem
+from src.api.schemas import (
+    SuggestRequest,
+    SuggestResponse,
+    SuggestionItem,
+    HealthResponse,
+    HealthCheckItem,
+    AnalyzeRequest,
+    AnalyzeResponse
+)
 from src.config.settings import settings
+from src.llm.prompt_builder import PromptBuilder
+
 
 from src.data.providers.openbb_provider import OpenBBProvider
 from src.data.services.data_service import DataService
@@ -59,11 +71,7 @@ hybrid_retriever = HybridRetriever(
     embedder=rag_embedder
 )
 reranker = Reranker()
-grounding_service = GroundingService(
-    min_score_threshold=settings.GROUNDING_MIN_SCORE,
-    min_chunks=settings.GROUNDING_MIN_CHUNKS,
-    min_average_threshold=settings.GROUNDING_MIN_TOP3_AVERAGE
-)
+grounding_service = GroundingService()
 rag_retriever = RAGRetriever(
     hybrid_retriever=hybrid_retriever,
     reranker=reranker,
@@ -113,6 +121,59 @@ async def suggest_stocks(request: SuggestRequest) -> Any:
     except Exception as e:
         logger.error("API | Fatal internal server error during /suggest: %s", e)
         raise HTTPException(status_code=500, detail="An internal server error occurred while processing the request.")
+
+
+@router.post("/analyze", response_model=AnalyzeResponse)
+async def analyze_query(request: AnalyzeRequest, db: AsyncSession = Depends(get_db)) -> Any:
+    """
+    Runs user query driven stock analysis pipeline.
+    """
+    logger.info("API | Received /analyze request for symbol: %s, query: '%s'", request.symbol, request.query)
+    try:
+        # Retrieve context from RAG layer using the user's custom query and top_k
+        citation_context = await rag_retriever.retrieve(
+            symbol=request.symbol.upper(),
+            db_session=db,
+            query=request.query,
+            top_k=request.top_k
+        )
+        
+        grounding_decision = citation_context.grounding
+        is_grounded = grounding_decision.is_grounded if grounding_decision else False
+        confidence_score = grounding_decision.confidence_score if grounding_decision else 0.0
+        
+        # Build diagnostics dictionary
+        diagnostics = {
+            "query": request.query,
+            "symbol": request.symbol,
+            "top_k": request.top_k,
+            "grounding_reason": grounding_decision.reason if grounding_decision else "No grounding decision"
+        }
+        
+        if not is_grounded:
+            refusal_reason = grounding_decision.reason if grounding_decision else "Grounding failed."
+            return AnalyzeResponse(
+                answer=f"Insufficient evidence available to answer this question reliably. Details: {refusal_reason}",
+                grounded=False,
+                confidence_score=confidence_score,
+                citations=[],
+                diagnostics=diagnostics
+            )
+            
+        # If grounded, build prompt and call LLM
+        prompt = PromptBuilder.build_custom_query_prompt(request.query, citation_context.formatted_text)
+        answer = llm_client.generate_response(prompt)
+        
+        return AnalyzeResponse(
+            answer=answer,
+            grounded=True,
+            confidence_score=confidence_score,
+            citations=citation_context.citations,
+            diagnostics=diagnostics
+        )
+    except Exception as e:
+        logger.error("API | Fatal error in /analyze: %s", e)
+        raise HTTPException(status_code=500, detail=f"Internal server error: {e}")
 
 
 @router.get("/health", response_model=HealthResponse)
