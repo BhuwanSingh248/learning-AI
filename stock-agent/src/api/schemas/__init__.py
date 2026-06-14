@@ -6,6 +6,8 @@ Defines the Input/Output Pydantic contracts for the HTTP Application layer.
 
 from typing import List, Optional, Any, Dict
 from pydantic import BaseModel, Field
+from src.data.models import Citation
+
 
 
 class SuggestRequest(BaseModel):
@@ -84,3 +86,18 @@ class HealthResponse(BaseModel):
     details: str
     probe_target: str
     checks: Dict[str, HealthCheckItem]
+
+
+class AnalyzeRequest(BaseModel):
+    symbol: str = Field(..., description="Stock symbol (e.g. INFY, AAPL)")
+    query: str = Field(..., description="User query driven stock analysis question")
+    top_k: int = Field(10, description="Number of candidate chunks to fetch")
+
+
+class AnalyzeResponse(BaseModel):
+    answer: str
+    grounded: bool
+    confidence_score: float
+    citations: List[Citation]
+    diagnostics: Optional[dict] = None
+
