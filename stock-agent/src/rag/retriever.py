@@ -34,6 +34,7 @@ from src.rag.faiss_store import FAISSStore
 from src.config.logger import setup_logger
 
 logger = setup_logger(__name__)
+from src.metrics.service import MetricsCollector
 from src.rag.hybrid_retriever import HybridRetriever
 from src.rag.reranker import Reranker
 from src.rag.grounding import GroundingService
@@ -60,6 +61,7 @@ class RAGRetriever:
         db_session: AsyncSession,
         query: str = "",
         top_k: int = 5,
+        metrics: MetricsCollector | None = None,
     ) -> CitationContext:
         """
         Retrieve the Top-K most relevant news snippets for a given symbol using hybrid search,
@@ -75,6 +77,8 @@ class RAGRetriever:
             A natural-language hint. If omitted, the `symbol` is used.
         top_k : int, optional
             Limit for the final number of chunks. Defaults to 5.
+        metrics : MetricsCollector, optional
+            Collector for recording stage timings and stats.
 
         Returns
         -------
@@ -88,27 +92,42 @@ class RAGRetriever:
         # 1. Retrieve raw candidates (fetch a larger pool size so neural reranking has choices)
         candidate_pool_size = top_k * 4
         logger.debug(f"RAGRetriever | Fetching up to {candidate_pool_size} candidates via Hybrid search")
+        if metrics:
+            metrics.start_stage("retrieval")
         candidates = await self.hybrid_retriever.search(
             query=search_query,
             symbol=symbol,
             db_session=db_session,
             top_k=candidate_pool_size
         )
+        if metrics:
+            metrics.end_stage("retrieval")
+            metrics.set_count("chunks_retrieved", len(candidates))
 
         # 2. Score and rerank candidates using Cross-Encoder model
         logger.debug(f"RAGRetriever | Reranking {len(candidates)} candidate chunks")
+        if metrics:
+            metrics.start_stage("reranker")
         ranked_pairs = self.reranker.rerank(
             query=search_query,
             candidates=candidates,
             top_k=top_k
         )
+        if metrics:
+            metrics.end_stage("reranker")
+            metrics.set_count("chunks_after_rerank", len(ranked_pairs))
 
         # 3. Evaluate Grounding Decision
         logger.debug("RAGRetriever | Running grounding evaluation")
+        if metrics:
+            metrics.start_stage("grounding")
         grounding_decision = self.grounding_service.evaluate(
             query=search_query,
             ranked_chunks_with_scores=ranked_pairs
         )
+        if metrics:
+            metrics.end_stage("grounding")
+            metrics.set_grounded(grounding_decision.is_grounded)
 
         # 4. Formulate response based on grounding path
         if not grounding_decision.is_grounded:

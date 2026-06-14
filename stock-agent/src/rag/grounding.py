@@ -69,7 +69,7 @@ class GroundingService:
         logger.info(
             "GroundingService | DIAGNOSTICS | Query: '%s' | "
             "Candidates: %d | Best: %.4f | Top3 Avg: %.4f | "
-            "Thresholds → min_score: %.4f, min_top3_avg: %.4f, min_chunks: %d",
+            "Thresholds -> min_score: %.4f, min_top3_avg: %.4f, min_chunks: %d",
             query, candidate_count, best_score, average_score,
             self.min_score_threshold, self.min_average_threshold, self.min_chunks
         )
