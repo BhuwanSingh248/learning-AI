@@ -19,6 +19,7 @@ from src.rag.indexer import NewsIndexer
 
 import asyncio
 from src.config.database import AsyncSessionLocal
+from src.metrics import MetricsCollector, PipelineMetrics
 
 logger = setup_logger(__name__)
 
@@ -33,6 +34,8 @@ class RankedSuggestion:
     signal_breakdown: Dict[str, Any] | None = None
     rag: Dict[str, Any] | None = None
     prediction: Dict[str, Any] | None = None
+    metrics: PipelineMetrics | None = None
+
 
 
 class StockAgent:
@@ -68,6 +71,8 @@ class StockAgent:
         suggestions: List[RankedSuggestion] = []
 
         for symbol in symbols:
+            metrics = MetricsCollector()
+            metrics.start_stage("total")
             try:
                 # 1. Fetch Raw Data
                 raw_prices = self.data_service.get_price_data(symbol, lookback_days)
@@ -110,7 +115,7 @@ class StockAgent:
                     try:
                         async def _fetch():
                             async with AsyncSessionLocal() as session:
-                                return await self.rag_retriever.retrieve(symbol, session, top_k=5)
+                                return await self.rag_retriever.retrieve(symbol, session, top_k=5, metrics=metrics)
                         
                         res = await _fetch()
                         context_text = res.formatted_context
@@ -129,7 +134,7 @@ class StockAgent:
                         reason=f"Insufficient evidence available to answer this question reliably. Details: {grounding_decision.reason}"
                     )
                 else:
-                    llm_decision = self.reasoning_engine.make_decision(signals, context_text)
+                    llm_decision = self.reasoning_engine.make_decision(signals, context_text, metrics=metrics)
 
 
                 # 5. Calculate Ranking Score 
@@ -169,6 +174,21 @@ class StockAgent:
                     "expected_direction": "bullish" if score > 0.6 else ("neutral" if score >= 0.4 else "bearish")
                 }
 
+                metrics.end_stage("total")
+                symbol_metrics = metrics.get_metrics()
+                
+                # Emit structured logs for Langfuse / monitoring
+                logger.info(
+                    "[METRICS] Symbol=%s Total=%.1fms Retrieval=%.1fms Reranker=%.1fms Grounding=%.1fms LLM=%.1fms Grounded=%s",
+                    symbol,
+                    symbol_metrics.total_duration_ms,
+                    symbol_metrics.retrieval_duration_ms,
+                    symbol_metrics.reranker_duration_ms,
+                    symbol_metrics.grounding_duration_ms,
+                    symbol_metrics.llm_duration_ms,
+                    "True" if symbol_metrics.grounded else "False"
+                )
+
                 suggestions.append(RankedSuggestion(
                     symbol=symbol,
                     score=round(score, 4),
@@ -176,7 +196,8 @@ class StockAgent:
                     reason=llm_decision.reason,
                     signal_breakdown=signal_breakdown,
                     rag=rag_info,
-                    prediction=prediction_meta
+                    prediction=prediction_meta,
+                    metrics=symbol_metrics
                 ))
 
                 logger.debug("StockAgent | Successfully analyzed %s. Score: %.3f", symbol, score)
@@ -197,7 +218,8 @@ class StockAgent:
                     "reason": s.reason,
                     "signal_breakdown": s.signal_breakdown,
                     "rag": s.rag,
-                    "prediction": s.prediction
+                    "prediction": s.prediction,
+                    "metrics": s.metrics.model_dump() if s.metrics else None
                 }
                 for s in suggestions
             ]
