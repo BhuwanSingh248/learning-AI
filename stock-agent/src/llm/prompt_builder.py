@@ -6,13 +6,48 @@ engineered financial signals. Enforces strict input layouts and output formattin
 expectations to minimize LLM hallucinations.
 """
 
+import os
 from src.analysis.signals import CombinedMarketSignal
+from src.llm.models import PromptPayload
 
 
 class PromptBuilder:
     """
     Constructs deterministic prompts for financial reasoning.
     """
+
+    @staticmethod
+    def load_system_prompt(version: str = "v1") -> str:
+        """
+        Loads the system prompt text from the corresponding version file.
+        """
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        prompt_path = os.path.join(current_dir, "prompts", f"system_{version}.txt")
+        try:
+            with open(prompt_path, "r", encoding="utf-8") as f:
+                return f.read().strip()
+        except FileNotFoundError:
+            raise FileNotFoundError(f"System prompt version file not found: system_{version}.txt")
+
+    @staticmethod
+    def build_recommendation_prompt(query: str, symbol: str, context_text: str, version: str = "v1") -> PromptPayload:
+        """
+        Constructs a PromptPayload containing the system prompt and structured user prompt.
+        """
+        system_prompt = PromptBuilder.load_system_prompt(version)
+        
+        user_prompt = (
+            f"Stock: {symbol.upper()}\n"
+            f"Question: {query}\n\n"
+            f"--- START OF CONTEXT ---\n"
+            f"{context_text}\n"
+            f"--- END OF CONTEXT ---\n"
+        )
+        
+        return PromptPayload(
+            system_prompt=system_prompt,
+            user_prompt=user_prompt
+        )
 
     @staticmethod
     def build_financial_reasoning_prompt(signals: CombinedMarketSignal, context_text: str = "") -> str:
