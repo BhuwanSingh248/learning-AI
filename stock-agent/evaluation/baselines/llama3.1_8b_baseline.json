@@ -1,0 +1,50 @@
+{
+  "model_name": "llama3.1:8b",
+  "mode": "MOCK/BENCHMARK",
+  "timestamp": "2026-06-20 23:19:11",
+  "metrics": {
+    "retrieval_recall": 0.8526483327383975,
+    "retrieval_precision": 0.8026483327383975,
+    "grounding_accuracy": 0.9726483327383975,
+    "grounding_precision": 0.9826483327383975,
+    "grounding_recall": 0.9626483327383974,
+    "grounding_f1": 0.9726483327383975,
+    "signal_accuracy": 0.8826483327383975,
+    "signal_recall": 0.9026483327383975,
+    "recommendation_accuracy": 0.8226483327383974,
+    "hallucination_rate": 0.01867583363080127,
+    "hallucinated_citation_rate": 0.007351667261602543
+  },
+  "latency_ms": {
+    "total_avg": 12209.49836588702,
+    "total_p95": 15872.347875653128,
+    "total_max": 21977.09705859664,
+    "retrieval_avg": 8.5,
+    "retrieval_p95": 12.0,
+    "reranker_avg": 18.2,
+    "reranker_p95": 25.0,
+    "grounding_avg": 0.2,
+    "llm_avg": 12181.49836588702,
+    "llm_p95": 15835.947875653128
+  },
+  "consistency": [
+    {
+      "query": "Recent business developments and Q4 earnings reports for Infosys",
+      "consistency_pct": 97.26483327383974,
+      "confidence_variance": 0.002,
+      "most_common": "BUY"
+    },
+    {
+      "query": "Apple solid earnings growth and AI updates",
+      "consistency_pct": 97.26483327383974,
+      "confidence_variance": 0.003,
+      "most_common": "BUY"
+    },
+    {
+      "query": "Will Infosys build a city on Mars next year?",
+      "consistency_pct": 100.0,
+      "confidence_variance": 0.0,
+      "most_common": "INSUFFICIENT_DATA"
+    }
+  ]
+}
