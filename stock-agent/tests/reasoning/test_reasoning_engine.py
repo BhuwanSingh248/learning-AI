@@ -1,8 +1,9 @@
 import pytest
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 from src.reasoning.reasoning_engine import ReasoningEngine
 from src.reasoning.models import RecommendationResponse, RecommendationType
+from src.signals.models import SignalType
 from src.metrics.service import MetricsCollector
 
 @pytest.fixture
@@ -16,9 +17,12 @@ def reasoning_engine(mock_llm_client):
     return ReasoningEngine(mock_llm_client)
 
 def test_make_decision_valid_buy(reasoning_engine, mock_llm_client):
-    """Verify standard valid BUY JSON response from LLM."""
+    """Verify system computes BUY when signals sum to >= 2.0."""
     mock_llm_client.generate_response.return_value = (
-        '{"recommendation": "BUY", "confidence": 0.85, "reasoning": "Strong indicators.", "citations": [1, 2]}'
+        '{"signals": ['
+        '  {"signal_type": "POSITIVE", "title": "Growth", "description": "Rev up 15%", "citation_ids": [1]},'
+        '  {"signal_type": "POSITIVE", "title": "New Contract", "description": "Government deal", "citation_ids": [2]}'
+        '], "reasoning": "Strong indicators."}'
     )
     
     metrics = MetricsCollector()
@@ -32,14 +36,18 @@ def test_make_decision_valid_buy(reasoning_engine, mock_llm_client):
     )
     
     assert response.recommendation == RecommendationType.BUY
-    assert response.confidence == 0.85
+    assert response.confidence == 0.7  # base 0.7 since 2 signals
     assert response.reasoning == "Strong indicators."
     assert response.citations == [1, 2]
+    assert len(response.signals) == 2
 
 def test_make_decision_valid_hold(reasoning_engine, mock_llm_client):
-    """Verify standard valid HOLD JSON response from LLM."""
+    """Verify system computes HOLD when signals sum to between -1.0 and 2.0."""
     mock_llm_client.generate_response.return_value = (
-        '{"recommendation": "HOLD", "confidence": 0.5, "reasoning": "Mixed signals.", "citations": []}'
+        '{"signals": ['
+        '  {"signal_type": "POSITIVE", "title": "Growth", "description": "Rev up 15%", "citation_ids": [1]},'
+        '  {"signal_type": "RISK", "title": "Tariff", "description": "Macro risk", "citation_ids": []}'
+        '], "reasoning": "Mixed signals."}'
     )
     
     response = reasoning_engine.make_decision(
@@ -47,18 +55,21 @@ def test_make_decision_valid_hold(reasoning_engine, mock_llm_client):
         query="Should I buy?",
         context_text="News context.",
         is_grounded=True,
-        available_citation_ids=[],
+        available_citation_ids=[1],
     )
     
     assert response.recommendation == RecommendationType.HOLD
-    assert response.confidence == 0.5
+    assert response.confidence == 0.7  # base 0.7 (no conflict between POSITIVE and RISK)
     assert response.reasoning == "Mixed signals."
-    assert response.citations == []
+    assert response.signals[0].score == 1.0
+    assert response.signals[1].score == -0.5
 
-def test_make_decision_invalid_recommendation_fallback(reasoning_engine, mock_llm_client):
-    """Verify invalid recommendation defaults to INSUFFICIENT_DATA."""
+def test_make_decision_invalid_signal_type_fallback(reasoning_engine, mock_llm_client):
+    """Verify invalid signal type falls back to MARKET."""
     mock_llm_client.generate_response.return_value = (
-        '{"recommendation": "STRONG_BUY", "confidence": 0.9, "reasoning": "Invalid type.", "citations": []}'
+        '{"signals": ['
+        '  {"signal_type": "STRONG_BUY", "title": "Growth", "description": "Rev up 15%", "citation_ids": [1]}'
+        '], "reasoning": "Fallback reasoning."}'
     )
     
     response = reasoning_engine.make_decision(
@@ -66,15 +77,14 @@ def test_make_decision_invalid_recommendation_fallback(reasoning_engine, mock_ll
         query="Should I buy?",
         context_text="News context.",
         is_grounded=True,
-        available_citation_ids=[],
+        available_citation_ids=[1],
     )
     
-    assert response.recommendation == RecommendationType.INSUFFICIENT_DATA
-    assert response.confidence == 0.9
-    assert response.reasoning == "Invalid type."
+    assert response.recommendation == RecommendationType.HOLD  # score = 0.0 (MARKET)
+    assert response.signals[0].signal_type == SignalType.MARKET
 
 def test_make_decision_invalid_json(reasoning_engine, mock_llm_client):
-    """Verify invalid JSON returns the parsing fallback response."""
+    """Verify invalid JSON returns fallback reasoning and empty signals."""
     mock_llm_client.generate_response.return_value = "Unstructured text response"
     
     response = reasoning_engine.make_decision(
@@ -85,12 +95,13 @@ def test_make_decision_invalid_json(reasoning_engine, mock_llm_client):
         available_citation_ids=[],
     )
     
-    assert response.recommendation == RecommendationType.INSUFFICIENT_DATA
+    assert response.recommendation == RecommendationType.HOLD
     assert response.confidence == 0.0
-    assert "Unable to parse model response" in response.reasoning
+    assert "Parsing signals failed" in response.reasoning
+    assert len(response.signals) == 0
 
 def test_make_decision_grounding_failure(reasoning_engine, mock_llm_client):
-    """Verify grounding refusal path bypasses LLM call and returns fallback."""
+    """Verify grounding refusal path bypasses LLM call and returns early refusal."""
     response = reasoning_engine.make_decision(
         symbol="AAPL",
         query="Should I buy?",
@@ -105,13 +116,16 @@ def test_make_decision_grounding_failure(reasoning_engine, mock_llm_client):
     assert "Grounding failed" in response.reasoning
     assert "Reranker score below threshold" in response.reasoning
     assert response.citations == []
+    assert len(response.signals) == 0
     
     mock_llm_client.generate_response.assert_not_called()
 
 def test_make_decision_citation_sanitation(reasoning_engine, mock_llm_client):
-    """Verify hallucinated citations are stripped out."""
+    """Verify hallucinated citations are stripped out of signals."""
     mock_llm_client.generate_response.return_value = (
-        '{"recommendation": "SELL", "confidence": 0.99, "reasoning": "High risk.", "citations": [1, 99]}'
+        '{"signals": ['
+        '  {"signal_type": "NEGATIVE", "title": "Debt", "description": "High debt", "citation_ids": [1, 99]}'
+        '], "reasoning": "Sanitation check."}'
     )
     
     response = reasoning_engine.make_decision(
@@ -122,32 +136,5 @@ def test_make_decision_citation_sanitation(reasoning_engine, mock_llm_client):
         available_citation_ids=[1, 2],
     )
     
-    assert response.recommendation == RecommendationType.SELL
-    assert response.confidence == 0.99
-    assert response.citations == [1]  # 99 is filtered out since it's not in available_citation_ids
-
-def test_make_decision_confidence_clamping(reasoning_engine, mock_llm_client):
-    """Verify confidence score is clamped within [0.0, 1.0]."""
-    # Test confidence > 1.0
-    mock_llm_client.generate_response.return_value = (
-        '{"recommendation": "BUY", "confidence": 1.5, "reasoning": "Overconfident.", "citations": []}'
-    )
-    response_high = reasoning_engine.make_decision(
-        symbol="AAPL",
-        query="Should I buy?",
-        context_text="News.",
-        is_grounded=True,
-    )
-    assert response_high.confidence == 1.0
-    
-    # Test confidence < 0.0
-    mock_llm_client.generate_response.return_value = (
-        '{"recommendation": "BUY", "confidence": -0.5, "reasoning": "Underconfident.", "citations": []}'
-    )
-    response_low = reasoning_engine.make_decision(
-        symbol="AAPL",
-        query="Should I buy?",
-        context_text="News.",
-        is_grounded=True,
-    )
-    assert response_low.confidence == 0.0
+    assert response.citations == [1]
+    assert response.signals[0].citation_ids == [1]

@@ -97,6 +97,7 @@ class AnalyzeRequest(BaseModel):
 
 
 from src.reasoning.models import RecommendationType
+from src.signals.models import Signal
 
 class AnalyzeResponse(BaseModel):
     recommendation: RecommendationType
@@ -104,6 +105,7 @@ class AnalyzeResponse(BaseModel):
     reasoning: str
     grounded: bool
     citations: List[Citation]
+    signals: List[Signal] = Field(default_factory=list)
     diagnostics: Optional[dict] = None
     metrics: Optional[PipelineMetrics] = None
 

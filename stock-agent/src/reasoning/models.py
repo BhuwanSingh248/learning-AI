@@ -1,6 +1,7 @@
 from enum import Enum
 from pydantic import BaseModel, Field
 from typing import List
+from src.signals.models import Signal
 
 class RecommendationType(str, Enum):
     BUY = "BUY"
@@ -16,6 +17,7 @@ class RecommendationResponse(BaseModel):
     confidence: float = Field(..., description="Confidence score from 0.0 to 1.0")
     reasoning: str = Field(..., description="Reasoning text supporting decision")
     citations: List[int] = Field(..., description="Source citation IDs referenced as evidence")
+    signals: List[Signal] = Field(default_factory=list, description="Extracted signal list supporting recommendation")
 
 class ReasoningResult(BaseModel):
     """

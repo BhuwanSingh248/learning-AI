@@ -178,7 +178,8 @@ async def debug_analyze(request: AnalyzeRequest, db: AsyncSession = Depends(get_
             is_grounded=is_grounded,
             available_citation_ids=available_citation_ids,
             metrics=metrics,
-            refusal_reason=refusal_reason
+            refusal_reason=refusal_reason,
+            grounding_confidence_score=grounding_decision.confidence_score if grounding_decision else 0.0
         )
         
         metrics.end_stage("total")

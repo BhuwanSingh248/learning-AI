@@ -143,7 +143,7 @@ def test_analyze_endpoint():
             ],
             grounding=mock_decision
         )
-        mock_generate.return_value = '{"recommendation": "BUY", "confidence": 0.8, "reasoning": "Yes, Infosys is a buy.", "citations": [1]}'
+        mock_generate.return_value = '{"signals": [{"signal_type": "POSITIVE", "title": "Growth", "description": "Rev up", "citation_ids": [1]}, {"signal_type": "POSITIVE", "title": "Contracts", "description": "New deal", "citation_ids": [1]}], "reasoning": "Yes, Infosys is a buy."}'
         
         response = client.post(
             "/analyze",
@@ -153,11 +153,15 @@ def test_analyze_endpoint():
         assert response.status_code == 200
         data = response.json()
         assert data["recommendation"] == "BUY"
-        assert data["confidence"] == 0.8
+        # base_conf (2 signals) = 0.7. grounding_score = -2.5 -> normalized = 0.375
+        # confidence = 0.8 * 0.7 + 0.2 * 0.375 = 0.635
+        assert abs(data["confidence"] - 0.635) < 0.01
         assert data["reasoning"] == "Yes, Infosys is a buy."
         assert data["grounded"] is True
         assert len(data["citations"]) == 1
         assert data["citations"][0]["chunk_id"] == "c1"
+        assert len(data["signals"]) == 2
+        assert data["signals"][0]["title"] == "Growth"
 
 def test_refusal_path():
     """
@@ -226,7 +230,7 @@ def test_api_metrics_returned():
             ],
             grounding=mock_decision
         )
-        mock_generate.return_value = '{"recommendation": "BUY", "confidence": 0.9, "reasoning": "Passed", "citations": [1]}'
+        mock_generate.return_value = '{"signals": [{"signal_type": "POSITIVE", "title": "Strong Earnings", "description": "Passed", "citation_ids": [1]}, {"signal_type": "POSITIVE", "title": "Positive Guidance", "description": "Passed", "citation_ids": [1]}], "reasoning": "Passed"}'
         
         # Test /analyze public endpoint
         response = client.post(

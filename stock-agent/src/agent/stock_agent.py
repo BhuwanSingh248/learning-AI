@@ -140,7 +140,8 @@ class StockAgent:
                     is_grounded=is_grounded,
                     available_citation_ids=available_citation_ids,
                     metrics=metrics,
-                    refusal_reason=refusal_reason
+                    refusal_reason=refusal_reason,
+                    grounding_confidence_score=grounding_decision.confidence_score if grounding_decision else 0.0
                 )
 
                 # 5. Calculate Ranking Score 
