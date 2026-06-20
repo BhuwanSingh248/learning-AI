@@ -42,6 +42,14 @@ def test_event_store_semantic_search(event_store):
     assert matched_event.title == "US-China Trade War"
     assert similarity > 0.4
 
+def test_event_store_semantic_search_war(event_store):
+    """Verify semantic search retrieves Russia-Ukraine War event on war query."""
+    results = event_store.search_similar_events("military invasion and geopolitical conflict in eastern europe", top_k=1)
+    assert len(results) == 1
+    matched_event, similarity = results[0]
+    assert matched_event.title == "Russia-Ukraine War"
+    assert similarity > 0.4
+
 def test_outcome_analyzer_matching_stock(outcome_analyzer, event_store):
     """Verify OutcomeAnalyzer retrieves stock-specific outcome when available."""
     trade_war_event = [e for e in event_store.events if e.event_id == "us_china_trade_war_2018"][0]

@@ -153,3 +153,25 @@ Enhance the Stock Recommendation Agent by adding a robust metrics/observability 
   - [x] **STEP 2.8.12: Baseline Storage:** Write baseline stats to `evaluation/baselines/{model_name}_baseline.json`.
   - [x] **STEP 2.8.13: Console Compatibility:** Avoid output emojis in logs to prevent Windows encoding crashes.
   - [x] **STEP 2.8.14: Simulation Profile Mock Mode:** Implement simulated profiles for registry models (`--mock` flag) to allow instant local validation.
+
+---
+
+### 🧩 Step 2.9 — Phase 2 Closure & Missing Items Backlog
+**Objective:** Address identified critical functional gaps, API improvements, evaluation coverage, historical retrieval engine gaps, frontend readiness, and operational requirements.
+
+* **Checklist:**
+  - [x] **STEP 2.9.1: Query Intent Routing:** Implement intent router bypassing RAG for `FUNDAMENTAL` query intent in `src/query_router/`.
+  - [x] **STEP 2.9.2: Grounding Threshold Calibration:** Review and relax default grounding thresholds (`GROUNDING_MIN_SCORE = -7.0`, `GROUNDING_MIN_AVERAGE_SCORE = -10.5`) in `src/config/settings.py` and `.env`.
+  - [x] **STEP 2.9.3: Empty Symbol Diagnostics:** Add detailed `failure_type` to RAG and grounding refusals.
+  - [x] **STEP 2.9.4: Add Supported Capability Metadata:** Implement `GET /capabilities` returning supported/unsupported features.
+  - [x] **STEP 2.9.5: Model Metadata Endpoint:** Implement `GET /models` returning active reasoning model configurations.
+  - [x] **STEP 2.9.6: Pipeline Status Endpoint:** Implement `GET /pipeline/status` checking connectivity of FAISS, DB, reranker, and Ollama.
+  - [x] **STEP 2.9.7: Evaluation Dataset Coverage:** Expand golden dataset to 102 cases covering positive/negative/risk news, refusal, and historical queries.
+  - [x] **STEP 2.9.8: Benchmark Runner Validation:** Verify execution paths for registry models Mistral, Qwen, Llama, and Phi4 in `run_benchmark.py`.
+  - [x] **STEP 2.9.9: Historical Events Validation:** Mark dataset as seed data and add documentation `data/historical_events_readme.md`.
+  - [x] **STEP 2.9.10: Historical Similarity Evaluation:** Add unit tests validating similarity-based semantic lookups (`Russia-Ukraine War`) in `tests/history/test_history.py`.
+  - [x] **STEP 2.9.11: Missing Visualization Endpoints:** Add endpoints `GET /evaluation/results`, `GET /benchmark/results`, `POST /historical-events/search`, and `POST /signals` to enable UI representation.
+  - [x] **STEP 2.9.12: Recommendation Explainability:** Return aggregated signals, historical matches, and citations in the JSON response model of the `/analyze` endpoint.
+  - [x] **STEP 2.9.13: News Freshness Monitoring:** Implement freshness health checks in `/health` (alerting if no news indexed in last 24h).
+  - [x] **STEP 2.9.14: Duplicate Indexing Protection:** Prevent duplicate article insertions in `NewsIndexer` by verifying MD5 hashes.
+  - [x] **STEP 2.9.15: RAG Observability:** Build relational database logging table `rag_pipeline_metrics` (via `MetricRecord`) and persist latency and grounding gate stats.

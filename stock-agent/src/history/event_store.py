@@ -45,6 +45,9 @@ class EventStore:
             
         logger.info("EventStore | Building FAISS semantic index for historical events")
         try:
+            # Filter out dataset metadata dummy event
+            self.events = [e for e in self.events if e.event_id != "dataset_metadata"]
+            
             embeddings = []
             for ev in self.events:
                 emb = self.embedder.embed_text(ev.description)

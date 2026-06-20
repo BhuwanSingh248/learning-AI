@@ -120,8 +120,8 @@ MARKETAUX_API_KEY=your_key_here
 GNEWS_API_KEY=your_key_here
 LLM_MODEL=phi3:mini
 OLLAMA_LOCAL_URL=http://localhost:11434
-GROUNDING_MIN_SCORE=-5.0
-GROUNDING_MIN_TOP3_AVERAGE=-9.0
+GROUNDING_MIN_SCORE=-7.0
+GROUNDING_MIN_TOP3_AVERAGE=-10.5
 GROUNDING_MIN_CHUNKS=1
 ```
 
@@ -143,7 +143,7 @@ The server will boot and begin listening on **`http://127.0.0.1:8000`**. You can
 ## 🧪 Verification, Evaluation & Benchmarking
 
 ### 1. Subsystem Readiness Probes
-The **`GET /health`** route performs real runtime status checks of external subsystems (confirming PostgreSQL async reachability, FAISS indexes loaded on disk, and Ollama server responsiveness).
+The **`GET /health`** route performs real runtime status checks of external subsystems (confirming PostgreSQL async reachability, FAISS indexes loaded on disk, and Ollama server responsiveness). It also verifies news freshness, warning if no new articles have been indexed within the last 24 hours.
 
 ### 2. Intermediate QA Debug Routes
 Use debug POST endpoints to trace data through the RAG pipeline step-by-step without calling the LLM:
@@ -158,8 +158,8 @@ Run the pytests verifying grounding regressions and E2E pathways:
 uv run pytest stock-agent/tests/
 ```
 
-### 4. Golden Dataset Evaluation Framework (Phase 2.7)
-Evaluate the active model against a golden dataset of 60 test cases:
+### 4. Golden Dataset Evaluation Framework (Phase 2.7 & Closure)
+Evaluate the active model against a golden dataset of 100+ test cases:
 ```bash
 # Run the evaluation engine (in mock/simulation mode)
 uv run python stock-agent/evaluation/run_evaluation.py --mock
@@ -176,6 +176,16 @@ This generates:
 * Model comparison report: [model_benchmark_report.md](file:///c:/Users/bhuwa/study/ai_stock_market/stock-agent/evaluation/model_benchmark_report.md)
 * Comparison rankings data: [model_rankings.json](file:///c:/Users/bhuwa/study/ai_stock_market/stock-agent/evaluation/model_rankings.json)
 * Captured baseline configs: `stock-agent/evaluation/baselines/*.json`
+
+### 6. Phase 2 Closure API Endpoints
+The following endpoints were added to support frontend integrations and diagnostics:
+* **`GET /capabilities`**: Returns lists of supported and unsupported capabilities (e.g. `news_analysis`, `recommendations`, etc.).
+* **`GET /models`**: Returns the active model configurations.
+* **`GET /pipeline/status`**: Returns health checks for critical RAG pipeline components: database, FAISS index, cross-encoder reranker, and local Ollama server status.
+* **`GET /evaluation/results`**: Exposes the latest golden dataset evaluation metrics scorecard.
+* **`GET /benchmark/results`**: Exposes the multi-model benchmarking rankings.
+* **`POST /historical-events/search`**: Exposes semantic similarity lookups over historical macro events (e.g., searching for war or tariffs).
+* **`POST /signals`**: Exposes signal extraction analytics over raw recommendation texts.
 
 ---
 

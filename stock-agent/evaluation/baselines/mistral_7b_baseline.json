@@ -1,42 +1,42 @@
 {
   "model_name": "mistral:7b",
   "mode": "MOCK/BENCHMARK",
-  "timestamp": "2026-06-20 23:19:11",
+  "timestamp": "2026-06-20 23:55:41",
   "metrics": {
-    "retrieval_recall": 0.8547710766793878,
-    "retrieval_precision": 0.8047710766793879,
-    "grounding_accuracy": 0.9547710766793878,
-    "grounding_precision": 0.9647710766793878,
-    "grounding_recall": 0.9447710766793878,
-    "grounding_f1": 0.9547710766793878,
-    "signal_accuracy": 0.8547710766793878,
-    "signal_recall": 0.8747710766793878,
-    "recommendation_accuracy": 0.7947710766793878,
-    "hallucination_rate": 0.02761446166030607,
-    "hallucinated_citation_rate": 0.005228923320612143
+    "retrieval_recall": 0.8528005819606913,
+    "retrieval_precision": 0.8028005819606914,
+    "grounding_accuracy": 0.9528005819606913,
+    "grounding_precision": 0.9628005819606913,
+    "grounding_recall": 0.9428005819606913,
+    "grounding_f1": 0.9528005819606913,
+    "signal_accuracy": 0.8528005819606913,
+    "signal_recall": 0.8728005819606913,
+    "recommendation_accuracy": 0.7928005819606914,
+    "hallucination_rate": 0.028599709019654335,
+    "hallucinated_citation_rate": 0.007199418039308668
   },
   "latency_ms": {
-    "total_avg": 7033.877621352656,
-    "total_p95": 9144.040907758454,
-    "total_max": 12660.97971843478,
+    "total_avg": 6756.373143902683,
+    "total_p95": 8783.28508707349,
+    "total_max": 12161.47165902483,
     "retrieval_avg": 8.5,
     "retrieval_p95": 12.0,
     "reranker_avg": 18.2,
     "reranker_p95": 25.0,
     "grounding_avg": 0.2,
-    "llm_avg": 7005.877621352656,
-    "llm_p95": 9107.640907758454
+    "llm_avg": 6728.373143902683,
+    "llm_p95": 8746.885087073488
   },
   "consistency": [
     {
       "query": "Recent business developments and Q4 earnings reports for Infosys",
-      "consistency_pct": 95.47710766793878,
+      "consistency_pct": 95.28005819606913,
       "confidence_variance": 0.002,
       "most_common": "BUY"
     },
     {
       "query": "Apple solid earnings growth and AI updates",
-      "consistency_pct": 95.47710766793878,
+      "consistency_pct": 95.28005819606913,
       "confidence_variance": 0.003,
       "most_common": "BUY"
     },

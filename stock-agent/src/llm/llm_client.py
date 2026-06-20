@@ -35,58 +35,10 @@ class LLMClient:
 
     def generate_response(self, prompt: str, system: str | None = None, format: str | None = None, timeout_seconds: int = 120) -> str:
         """
-        Sends a prompt to the LLM and retrieves the text response.
-        
-        Args:
-            prompt: The text prompt to reason about.
-            system: Optional system instructions prompt.
-            format: Optional response format (e.g. "json").
-            timeout_seconds: Amount of time to wait before falling back.
-            
-        Returns:
-            The raw text response from the model, or a safe fallback on failure.
+        Sends a prompt to the LLM and retrieves the text response by delegating
+        to the unified OllamaProvider abstraction.
         """
-        logger.debug("LLMClient | Sending prompt to %s (len: %d)", self.model_name, len(prompt))
-
-        payload = {
-            "model": self.model_name,
-            "prompt": prompt,
-            "stream": False
-        }
-        if system:
-            payload["system"] = system
-        if format:
-            payload["format"] = format
-        
-        data = json.dumps(payload).encode("utf-8")
-        req = urllib.request.Request(
-            self.api_endpoint, 
-            data=data, 
-            headers={"Content-Type": "application/json"}, 
-            method="POST"
-        )
-
-        try:
-            with urllib.request.urlopen(req, timeout=timeout_seconds) as response:
-                if response.status != 200:
-                    logger.error("LLMClient | Received anomalous status code: %s", response.status)
-                    return "Error: LLM service returned unexpected status code."
-
-                response_data = json.loads(response.read().decode("utf-8"))
-                output_text = response_data.get("response", "").strip()
-
-                if not output_text:
-                    logger.warning("LLMClient | Model returned an empty response.")
-                    return "Error: LLM service returned empty response."
-                
-                return output_text
-
-        except urllib.error.URLError as e:
-            logger.error("LLMClient | Connection error communicating with Ollama: %s", e)
-            return "Error: Cannot connect to LLM service."
-        except TimeoutError:
-            logger.error("LLMClient | Request timed out after %s seconds.", timeout_seconds)
-            return "Error: LLM service request timed out."
-        except Exception as e:
-            logger.error("LLMClient | Unexpected failure: %s", e)
-            return "Error: An unexpected error occurred while communicating with the LLM."
+        logger.debug("LLMClient | Sending prompt to %s (len: %d) via provider", self.model_name, len(prompt))
+        from src.llm.providers.ollama import OllamaProvider
+        provider = OllamaProvider(model_name=self.model_name, base_url=self.base_url)
+        return provider._generate_sync(prompt, system, format, timeout_seconds)

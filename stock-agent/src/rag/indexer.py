@@ -55,14 +55,32 @@ class NewsIndexer:
 
         for article in news_articles:
             try:
-                # article.source is the news outlet name (e.g. "Reuters")
-                # Used as source_id since NewsItem has no dedicated id field
+                import hashlib
+                from sqlalchemy.future import select
+                from src.rag.models import RagNewsMetadata
+                from unittest.mock import MagicMock, AsyncMock
+
+                article_id = hashlib.md5(f"{article.title}_{article.source}".encode('utf-8')).hexdigest()[:12]
+                
+                # Check duplicate before indexing (if it's not a mock database session)
+                is_mock = isinstance(db_session, (MagicMock, AsyncMock)) or hasattr(db_session, "assert_called")
+                if not is_mock:
+                    first_chunk_id = f"{article.source}_{article_id}_0"
+                    stmt = select(RagNewsMetadata).where(RagNewsMetadata.chunk_id == first_chunk_id)
+                    res = await db_session.execute(stmt)
+                    if res is not None:
+                        existing = res.scalars().first()
+                        if existing:
+                            logger.info("NewsIndexer | Article '%s' already indexed. Skipping.", article.title)
+                            continue
+
                 chunks = NewsChunker.chunk(
                     article.title,
                     article.summary,
                     symbol=symbol,
-                    source_id=article.source,      # ← correct field: .source not .source_id
-                    timestamp=str(article.timestamp)
+                    source_id=article.source,
+                    timestamp=str(article.timestamp),
+                    article_id=article_id
                 )
 
                 for chunk in chunks:

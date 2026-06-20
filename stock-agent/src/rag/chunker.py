@@ -17,7 +17,8 @@ class NewsChunker:
         *,
         symbol: str = None,
         source_id: str = None,
-        timestamp: str = None
+        timestamp: str = None,
+        article_id: str = None
     ) -> List[NewsChunk]:
         if not title and not summary:
             return []
@@ -25,7 +26,7 @@ class NewsChunker:
         combined_text = NewsChunker._combine_text(title,summary)
         sentences = NewsChunker._split_sentence(combined_text)
         raw_chunks = NewsChunker._build_chunk(sentences)
-        chunks = NewsChunker._attach_metadata(raw_chunks,symbol,source_id,timestamp)
+        chunks = NewsChunker._attach_metadata(raw_chunks,symbol,source_id,timestamp,article_id)
         return chunks        
     
     @staticmethod
@@ -73,11 +74,12 @@ class NewsChunker:
 
     
     @staticmethod
-    def _attach_metadata(raw_chunk:List[str],symbol:str,source_id:str,timestamp:str)->List[NewsChunk]:
+    def _attach_metadata(raw_chunk:List[str],symbol:str,source_id:str,timestamp:str,article_id:str=None)->List[NewsChunk]:
         chunks=[]
         for index, chunk in enumerate(raw_chunk):
+            prefix = f"{source_id}_{article_id}" if article_id else source_id
             chunks.append(NewsChunk(
-                chunk_id=f"{source_id}_{index}",
+                chunk_id=f"{prefix}_{index}",
                 source_id=source_id,
                 chunk_index=index,
                 symbol=symbol,

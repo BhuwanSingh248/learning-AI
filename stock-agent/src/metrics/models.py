@@ -27,3 +27,30 @@ class PipelineMetrics(BaseModel):
 
     # Extensibility catch-all dictionary
     additional_data: Dict[str, Any] = Field(default_factory=dict, description="Custom debugging metadata dictionary.")
+
+
+from sqlalchemy import Column, Integer, String, Float, Boolean, DateTime
+from datetime import datetime, timezone
+from src.config.database import Base
+
+class MetricRecord(Base):
+    """
+    SQLAlchemy ORM model for persisting RAG pipeline metrics to PostgreSQL.
+    """
+    __tablename__ = "rag_pipeline_metrics"
+
+    id = Column(Integer, primary_key=True, index=True)
+    symbol = Column(String, index=True, nullable=False)
+    query = Column(String, nullable=False)
+    timestamp = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
+    total_duration_ms = Column(Float, nullable=False)
+    retrieval_duration_ms = Column(Float, nullable=False)
+    reranker_duration_ms = Column(Float, nullable=False)
+    grounding_duration_ms = Column(Float, nullable=False)
+    prompt_build_duration_ms = Column(Float, nullable=False)
+    llm_duration_ms = Column(Float, nullable=False)
+    chunks_retrieved = Column(Integer, nullable=False)
+    chunks_after_rerank = Column(Integer, nullable=False)
+    grounded = Column(Boolean, nullable=False)
+    model_name = Column(String, nullable=True)
+    average_score = Column(Float, nullable=True)

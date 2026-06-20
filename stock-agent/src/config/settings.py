@@ -36,8 +36,8 @@ class Settings:
     VECTOR_DIMENSION: int = int(os.getenv("VECTOR_DIMENSION", "384"))
 
     # grounding settings
-    GROUNDING_MIN_SCORE: float = float(os.getenv("GROUNDING_MIN_SCORE", "-5.0"))
-    GROUNDING_MIN_AVERAGE_SCORE: float = float(os.getenv("GROUNDING_MIN_AVERAGE_SCORE", "-9.0"))
+    GROUNDING_MIN_SCORE: float = float(os.getenv("GROUNDING_MIN_SCORE", "-7.0"))
+    GROUNDING_MIN_AVERAGE_SCORE: float = float(os.getenv("GROUNDING_MIN_AVERAGE_SCORE", "-10.5"))
     GROUNDING_MIN_CHUNKS: int = int(os.getenv("GROUNDING_MIN_CHUNKS", "1"))
 
 # Instantiate settings to be used across the app

@@ -1,5 +1,15 @@
 [
   {
+    "event_id": "dataset_metadata",
+    "title": "Seed Dataset Disclaimer",
+    "description": "SEED DATASET: This dataset contains seed outcomes and historical asset reactions for demonstrating search and similarity matching. It should NOT be treated as live, absolute ground truth.",
+    "event_date": "2026-06-20",
+    "sector": "Metadata",
+    "impact_score": 0.0,
+    "sector_outcomes": [],
+    "stock_outcomes": []
+  },
+  {
     "event_id": "us_china_trade_war_2018",
     "title": "US-China Trade War",
     "description": "US increases tariffs on Chinese imports starting a trade war, impacting export sectors.",

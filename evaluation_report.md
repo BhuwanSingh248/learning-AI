@@ -1,6 +1,6 @@
 # Stock Agent Evaluation & Calibration Report
 
-* **Evaluation Date:** 2026-06-20 23:15:34
+* **Evaluation Date:** 2026-06-20 23:55:21
 * **Evaluation Mode:** MOCK/SIMULATION (mock)
 * **Validation Standard:** Golden Evaluation Dataset (60 Cases)
 
@@ -10,15 +10,15 @@
 
 | Metric | Score | Target / Acceptable Range | Status |
 | :--- | :---: | :---: | :---: |
-| **Retrieval Recall** | 98.4% | > 80% | ✅ Met |
-| **Retrieval Precision** | 100.0% | - | Info |
-| **Grounding Gate Accuracy** | 100.0% | > 90% | ✅ Met |
+| **Retrieval Recall** | 76.6% | > 80% | ⚠️ Low |
+| **Retrieval Precision** | 83.3% | - | Info |
+| **Grounding Gate Accuracy** | 89.2% | > 90% | ⚠️ Low |
 | **Grounding Precision** | 100.0% | - | Info |
-| **Grounding Recall (Gate)** | 100.0% | - | Info |
-| **Grounding F1 Score** | 100.0% | - | Info |
-| **Signal Extraction Precision** | 60.0% | > 80% | ⚠️ Low |
-| **Signal Extraction Recall** | 80.0% | - | Info |
-| **Recommendation Accuracy** | 48.3% | > 70% | ⚠️ Low |
+| **Grounding Recall (Gate)** | 83.3% | - | Info |
+| **Grounding F1 Score** | 90.9% | - | Info |
+| **Signal Extraction Precision** | 54.5% | > 80% | ⚠️ Low |
+| **Signal Extraction Recall** | 67.4% | - | Info |
+| **Recommendation Accuracy** | 50.0% | > 70% | ⚠️ Low |
 | **Citation Hallucination Rate** | 0.0% | < 5% | ✅ Safe |
 | **Fact/Symbol Hallucination Rate** | 0.0% | < 5% | ✅ Safe |
 
@@ -28,10 +28,10 @@
 
 | Expected \ Predicted | BUY | HOLD | SELL | INSUFFICIENT_DATA | Matches / Total | Accuracy |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: |
-| **BUY** | 0 | 15 | 0 | 0 | 0 / 15 | 0.0% |
+| **BUY** | 0 | 16 | 0 | 5 | 0 / 21 | 0.0% |
 | **HOLD** | 0 | 0 | 0 | 0 | 0 / 0 | 0.0% |
-| **SELL** | 0 | 16 | 14 | 0 | 14 / 30 | 46.7% |
-| **INSUFFICIENT_DATA** | 0 | 0 | 0 | 15 | 15 / 15 | 100.0% |
+| **SELL** | 0 | 24 | 15 | 6 | 15 / 45 | 33.3% |
+| **INSUFFICIENT_DATA** | 0 | 0 | 0 | 36 | 36 / 36 | 100.0% |
 
 ---
 
@@ -59,12 +59,12 @@ Each consistency query was run **10 times** to verify decision boundary stabilit
 All latency metrics are expressed in milliseconds (ms) over the full 60-query run:
 
 * **Overall Execution Time:**
-  * Average: **96.2ms**
-  * 95th Percentile: **61.9ms**
-  * Max: **3467.3ms**
+  * Average: **68.7ms**
+  * 95th Percentile: **56.6ms**
+  * Max: **4211.3ms**
 * **Sub-Stage Durations (Average / P95):**
-  * Retrieval Stage: `10.8ms` / `16.5ms`
-  * Reranker Stage: `72.2ms` / `24.5ms`
+  * Retrieval Stage: `7.7ms` / `16.0ms`
+  * Reranker Stage: `52.1ms` / `23.2ms`
   * Grounding Gate Stage: `0.1ms` / `<1ms`
   * LLM Query Stage: `0.0ms` / `0.1ms`
 

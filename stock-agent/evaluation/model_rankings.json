@@ -1,108 +1,108 @@
 {
-  "best_overall": "gemma3",
+  "best_overall": "qwen2.5:3b",
   "best_fast_model": "qwen2.5:3b",
   "best_accuracy_model": "llama3.1:8b",
   "rankings": [
     {
-      "model_name": "gemma3",
-      "overall_score": 85.8,
-      "recommendation_accuracy": 0.8136735629208608,
-      "grounding_accuracy": 0.9636735629208607,
-      "hallucination_rate": 0.02316321853956965,
-      "consistency_score": 97.57823752805739,
-      "avg_latency_ms": 7883.980365918463,
-      "p95_latency_ms": 10249.174475694002,
+      "model_name": "qwen2.5:3b",
+      "overall_score": 85.6,
+      "recommendation_accuracy": 0.752809877513619,
+      "grounding_accuracy": 0.962809877513619,
+      "hallucination_rate": 0.03359506124319045,
+      "consistency_score": 95.52065850090794,
+      "avg_latency_ms": 3912.848121443745,
+      "p95_latency_ms": 5086.702557876869,
       "scores": {
-        "accuracy": 0.814,
-        "grounding": 0.964,
-        "hallucination": 0.977,
-        "consistency": 0.976,
-        "latency": 0.474
+        "accuracy": 0.753,
+        "grounding": 0.963,
+        "hallucination": 0.966,
+        "consistency": 0.955,
+        "latency": 0.739
+      }
+    },
+    {
+      "model_name": "gemma3",
+      "overall_score": 85.5,
+      "recommendation_accuracy": 0.8106935200719982,
+      "grounding_accuracy": 0.9606935200719982,
+      "hallucination_rate": 0.024653239964000907,
+      "consistency_score": 97.37956800479988,
+      "avg_latency_ms": 7997.03846951873,
+      "p95_latency_ms": 10396.15001037435,
+      "scores": {
+        "accuracy": 0.811,
+        "grounding": 0.961,
+        "hallucination": 0.975,
+        "consistency": 0.974,
+        "latency": 0.467
       }
     },
     {
       "model_name": "mistral:7b",
       "overall_score": 85.3,
-      "recommendation_accuracy": 0.7947710766793878,
-      "grounding_accuracy": 0.9547710766793878,
-      "hallucination_rate": 0.02761446166030607,
-      "consistency_score": 96.98473844529252,
-      "avg_latency_ms": 7033.877621352656,
-      "p95_latency_ms": 9144.040907758454,
+      "recommendation_accuracy": 0.7928005819606914,
+      "grounding_accuracy": 0.9528005819606913,
+      "hallucination_rate": 0.028599709019654335,
+      "consistency_score": 96.85337213071277,
+      "avg_latency_ms": 6756.373143902683,
+      "p95_latency_ms": 8783.28508707349,
       "scores": {
-        "accuracy": 0.795,
-        "grounding": 0.955,
-        "hallucination": 0.972,
-        "consistency": 0.97,
-        "latency": 0.531
-      }
-    },
-    {
-      "model_name": "qwen2.5:3b",
-      "overall_score": 84.2,
-      "recommendation_accuracy": 0.7373216830928736,
-      "grounding_accuracy": 0.9473216830928736,
-      "hallucination_rate": 0.0413391584535632,
-      "consistency_score": 94.48811220619159,
-      "avg_latency_ms": 4135.3121962129935,
-      "p95_latency_ms": 5375.905855076891,
-      "scores": {
-        "accuracy": 0.737,
-        "grounding": 0.947,
-        "hallucination": 0.959,
-        "consistency": 0.945,
-        "latency": 0.724
+        "accuracy": 0.793,
+        "grounding": 0.953,
+        "hallucination": 0.971,
+        "consistency": 0.969,
+        "latency": 0.55
       }
     },
     {
       "model_name": "phi4",
-      "overall_score": 83.8,
-      "recommendation_accuracy": 0.8042610993850653,
-      "grounding_accuracy": 0.9542610993850652,
-      "hallucination_rate": 0.02286945030746739,
-      "consistency_score": 96.95073995900435,
-      "avg_latency_ms": 9892.812992796591,
-      "p95_latency_ms": 12860.65689063557,
+      "overall_score": 85.0,
+      "recommendation_accuracy": 0.8062828982886411,
+      "grounding_accuracy": 0.956282898288641,
+      "hallucination_rate": 0.021858550855679462,
+      "consistency_score": 97.08552655257608,
+      "avg_latency_ms": 8372.080073153189,
+      "p95_latency_ms": 10883.704095099147,
       "scores": {
-        "accuracy": 0.804,
-        "grounding": 0.954,
-        "hallucination": 0.977,
-        "consistency": 0.97,
-        "latency": 0.34
+        "accuracy": 0.806,
+        "grounding": 0.956,
+        "hallucination": 0.978,
+        "consistency": 0.971,
+        "latency": 0.442
       }
     },
     {
       "model_name": "llama3.1:8b",
-      "overall_score": 83.6,
-      "recommendation_accuracy": 0.8226483327383974,
-      "grounding_accuracy": 0.9726483327383975,
-      "hallucination_rate": 0.01867583363080127,
-      "consistency_score": 98.17655551589316,
-      "avg_latency_ms": 12209.49836588702,
-      "p95_latency_ms": 15872.347875653128,
+      "overall_score": 84.1,
+      "recommendation_accuracy": 0.8281651667648603,
+      "grounding_accuracy": 0.9781651667648603,
+      "hallucination_rate": 0.01591741661756981,
+      "consistency_score": 98.54434445099069,
+      "avg_latency_ms": 12074.531202747263,
+      "p95_latency_ms": 15696.890563571442,
       "scores": {
-        "accuracy": 0.823,
-        "grounding": 0.973,
-        "hallucination": 0.981,
-        "consistency": 0.982,
-        "latency": 0.186
+        "accuracy": 0.828,
+        "grounding": 0.978,
+        "hallucination": 0.984,
+        "consistency": 0.985,
+        "latency": 0.195
       }
     },
     {
       "model_name": "mock",
-      "overall_score": 79.3,
-      "recommendation_accuracy": 0.48333333333333334,
-      "grounding_accuracy": 1.0,
+      "overall_score": 77.3,
+      "recommendation_accuracy": 0.5,
+      "grounding_accuracy": 0.8921568627450981,
       "hallucination_rate": 0.0,
       "consistency_score": 100.0,
-      "avg_latency_ms": 96.21671040852864,
-      "p95_latency_ms": 61.9096040725708,
+      "avg_latency_ms": 68.72007893581016,
+      "p95_latency_ms": 56.63408041000365,
       "scores": {
-        "accuracy": 0.483,
-        "grounding": 1.0,
+        "accuracy": 0.5,
+        "grounding": 0.892,
         "hallucination": 1.0,
         "consistency": 1.0,
-        "latency": 0.994
+        "latency": 0.995
       }
     }
   ]
