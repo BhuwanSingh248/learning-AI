@@ -2,6 +2,7 @@ from enum import Enum
 from pydantic import BaseModel, Field
 from typing import List
 from src.signals.models import Signal
+from src.history.models import HistoricalMatch
 
 class RecommendationType(str, Enum):
     BUY = "BUY"
@@ -18,6 +19,7 @@ class RecommendationResponse(BaseModel):
     reasoning: str = Field(..., description="Reasoning text supporting decision")
     citations: List[int] = Field(..., description="Source citation IDs referenced as evidence")
     signals: List[Signal] = Field(default_factory=list, description="Extracted signal list supporting recommendation")
+    historical_matches: List[HistoricalMatch] = Field(default_factory=list, description="List of matched historical analogies")
 
 class ReasoningResult(BaseModel):
     """

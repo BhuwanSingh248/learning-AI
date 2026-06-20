@@ -98,6 +98,7 @@ class AnalyzeRequest(BaseModel):
 
 from src.reasoning.models import RecommendationType
 from src.signals.models import Signal
+from src.history.models import HistoricalMatch
 
 class AnalyzeResponse(BaseModel):
     recommendation: RecommendationType
@@ -106,6 +107,7 @@ class AnalyzeResponse(BaseModel):
     grounded: bool
     citations: List[Citation]
     signals: List[Signal] = Field(default_factory=list)
+    historical_matches: List[HistoricalMatch] = Field(default_factory=list)
     diagnostics: Optional[dict] = None
     metrics: Optional[PipelineMetrics] = None
 

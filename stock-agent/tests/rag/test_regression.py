@@ -133,8 +133,10 @@ def test_analyze_endpoint():
     client = TestClient(app)
     
     with patch("src.api.routes.rag_retriever.retrieve") as mock_retrieve, \
-         patch("src.api.routes.llm_client.generate_response") as mock_generate:
+         patch("src.api.routes.llm_client.generate_response") as mock_generate, \
+         patch("src.api.routes.event_retriever.retrieve") as mock_event_retrieve:
         
+        mock_event_retrieve.return_value = []
         mock_decision = GroundingDecision(is_grounded=True, reason="Evidence passed", confidence_score=-2.5)
         mock_retrieve.return_value = CitationContext(
             formatted_text="[1] Source: Reuters | Context: Info",
@@ -220,8 +222,10 @@ def test_api_metrics_returned():
     client = TestClient(app)
     
     with patch("src.api.routes.rag_retriever.retrieve") as mock_retrieve, \
-         patch("src.api.routes.llm_client.generate_response") as mock_generate:
+         patch("src.api.routes.llm_client.generate_response") as mock_generate, \
+         patch("src.api.routes.event_retriever.retrieve") as mock_event_retrieve:
         
+        mock_event_retrieve.return_value = []
         mock_decision = GroundingDecision(is_grounded=True, reason="Passed", confidence_score=-1.0)
         mock_retrieve.return_value = CitationContext(
             formatted_text="[1] Context",

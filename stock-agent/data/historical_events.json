@@ -1,0 +1,84 @@
+[
+  {
+    "event_id": "us_china_trade_war_2018",
+    "title": "US-China Trade War",
+    "description": "US increases tariffs on Chinese imports starting a trade war, impacting export sectors.",
+    "event_date": "2018-07-06",
+    "sector": "Manufacturing",
+    "impact_score": -0.8,
+    "sector_outcomes": [
+      {"sector": "Manufacturing", "return_30d": -0.08},
+      {"sector": "Aviation", "return_30d": -0.04},
+      {"sector": "IT", "return_30d": -0.02}
+    ],
+    "stock_outcomes": [
+      {"stock_symbol": "INFY", "return_30d": -0.05},
+      {"stock_symbol": "AAPL", "return_30d": -0.07}
+    ]
+  },
+  {
+    "event_id": "covid_19_crash_2020",
+    "title": "COVID-19 Pandemic Crash",
+    "description": "Global coronavirus pandemic shutdowns trigger rapid lockdowns and economic contraction.",
+    "event_date": "2020-03-11",
+    "sector": "Hospitality",
+    "impact_score": -1.0,
+    "sector_outcomes": [
+      {"sector": "Hospitality", "return_30d": -0.30},
+      {"sector": "Aviation", "return_30d": -0.25},
+      {"sector": "IT", "return_30d": 0.15},
+      {"sector": "Healthcare", "return_30d": 0.20}
+    ],
+    "stock_outcomes": [
+      {"stock_symbol": "INFY", "return_30d": 0.10},
+      {"stock_symbol": "AAPL", "return_30d": 0.12}
+    ]
+  },
+  {
+    "event_id": "russia_ukraine_war_2022",
+    "title": "Russia-Ukraine War",
+    "description": "Russia launches full-scale invasion of Ukraine, disrupting energy and grain supply chains.",
+    "event_date": "2022-02-24",
+    "sector": "Energy",
+    "impact_score": -0.5,
+    "sector_outcomes": [
+      {"sector": "Energy", "return_30d": 0.25},
+      {"sector": "Defense", "return_30d": 0.20},
+      {"sector": "Aviation", "return_30d": -0.15}
+    ],
+    "stock_outcomes": [
+      {"stock_symbol": "INFY", "return_30d": -0.04}
+    ]
+  },
+  {
+    "event_id": "svb_collapse_2023",
+    "title": "Silicon Valley Bank Collapse",
+    "description": "SVB bank run triggers a liquidity crisis and concerns of systemic banking system failure.",
+    "event_date": "2023-03-10",
+    "sector": "Financials",
+    "impact_score": -0.6,
+    "sector_outcomes": [
+      {"sector": "Financials", "return_30d": -0.15},
+      {"sector": "IT", "return_30d": -0.05}
+    ],
+    "stock_outcomes": [
+      {"stock_symbol": "INFY", "return_30d": -0.03}
+    ]
+  },
+  {
+    "event_id": "fed_rate_hikes_2022",
+    "title": "Federal Reserve Rate Hikes",
+    "description": "Federal Reserve aggressively hikes interest rates to combat high post-pandemic inflation.",
+    "event_date": "2022-03-16",
+    "sector": "Technology",
+    "impact_score": -0.4,
+    "sector_outcomes": [
+      {"sector": "Financials", "return_30d": 0.10},
+      {"sector": "IT", "return_30d": -0.12},
+      {"sector": "Growth Stocks", "return_30d": -0.15}
+    ],
+    "stock_outcomes": [
+      {"stock_symbol": "AAPL", "return_30d": -0.10}
+    ]
+  }
+]

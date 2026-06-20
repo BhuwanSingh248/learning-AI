@@ -62,9 +62,16 @@ composite_provider = CompositeDataProvider(
 
 data_service = DataService(composite_provider)
 llm_client = LLMClient()
-reasoning_engine = ReasoningEngine(llm_client)
-
 rag_embedder = EmbeddingModel()
+
+from src.history.event_store import EventStore
+from src.history.event_retriever import EventRetriever
+from src.history.outcome_analyzer import OutcomeAnalyzer
+
+event_store = EventStore(rag_embedder)
+event_retriever = EventRetriever(event_store)
+outcome_analyzer = OutcomeAnalyzer()
+reasoning_engine = ReasoningEngine(llm_client, event_retriever, outcome_analyzer)
 rag_store = FAISSStore()
 bm25_retriever = BM25Retriever()
 hybrid_retriever = HybridRetriever(
@@ -202,6 +209,7 @@ async def analyze_query(request: AnalyzeRequest, db: AsyncSession = Depends(get_
             grounded=is_grounded,
             citations=filtered_citations,
             signals=llm_decision.signals,
+            historical_matches=llm_decision.historical_matches,
             diagnostics=diagnostics,
             metrics=symbol_metrics
         )

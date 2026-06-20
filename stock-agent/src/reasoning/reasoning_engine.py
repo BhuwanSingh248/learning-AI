@@ -1,5 +1,5 @@
 import json
-from typing import List, Optional
+from typing import List, Optional, Any
 from src.config.logger import setup_logger
 from src.llm.llm_client import LLMClient
 from src.llm.prompt_builder import PromptBuilder
@@ -8,21 +8,27 @@ from src.reasoning.models import RecommendationResponse, RecommendationType
 from src.signals.models import Signal, SignalType
 from src.signals.signal_engine import SignalEngine
 from src.signals.scoring import SignalScorer, RecommendationCalculator, ConfidenceCalculator
+from src.history.models import HistoricalMatch
 
 logger = setup_logger(__name__)
 
 class ReasoningEngine:
     """
     Orchestrates the prompt building, local LLM execution, JSON parsing, 
-    and structured data validation for stock investment recommendations.
+    and structured data validation for stock investment recommendations,
+    incorporating historical analogies and outcomes.
     """
 
-    def __init__(self, llm_client: LLMClient):
+    def __init__(self, llm_client: LLMClient, event_retriever: Optional[Any] = None, outcome_analyzer: Optional[Any] = None):
         """
         Args:
             llm_client: Injected LLM connection (DIP).
+            event_retriever: Injected Historical Event Retriever (optional).
+            outcome_analyzer: Injected Historical Outcome Analyzer (optional).
         """
         self.llm_client = llm_client
+        self.event_retriever = event_retriever
+        self.outcome_analyzer = outcome_analyzer
 
     def make_decision(
         self,
@@ -54,7 +60,8 @@ class ReasoningEngine:
                 confidence=0.0,
                 reasoning=reasoning_str,
                 citations=[],
-                signals=[]
+                signals=[],
+                historical_matches=[]
             )
 
         # 2. Build structured prompt (v2 system and user payload)
@@ -78,14 +85,54 @@ class ReasoningEngine:
 
         # 4. JSON Parsing & Signal Extraction Layer
         extraction = SignalEngine.extract_signals(raw_response, allowed_citations)
+        extracted_signals = extraction.signals
         
-        # 5. Signal Scoring Layer
-        scored_signals = SignalScorer.score_signals(extraction.signals)
+        # 5. Historical Analogy Learning Layer (Step 2.5.8)
+        historical_matches = []
+        historical_signals = []
+        if self.event_retriever and self.outcome_analyzer:
+            try:
+                # Retrieve matching events (using query text for semantic comparison)
+                matches = self.event_retriever.retrieve(query, top_k=1)
+                for event, similarity in matches:
+                    observed_outcome = self.outcome_analyzer.analyze_outcome(event, symbol)
+                    historical_matches.append(HistoricalMatch(
+                        event=event.title,
+                        similarity=similarity,
+                        observed_outcome=observed_outcome
+                    ))
+                    
+                    # Compute signal score dynamically: impact_score * similarity
+                    sig_score = float(round(event.impact_score * similarity, 2))
+                    
+                    # Map to positive, negative, or risk based on computed score
+                    if sig_score < -0.5:
+                        sig_type = SignalType.NEGATIVE
+                    elif sig_score > 0.3:
+                        sig_type = SignalType.POSITIVE
+                    else:
+                        sig_type = SignalType.RISK
+                        
+                    historical_signals.append(Signal(
+                        signal_type=sig_type,
+                        title=f"Historical Match: {event.title}",
+                        description=f"Observed outcome: {observed_outcome}. Similarity: {similarity:.0%}",
+                        score=sig_score,
+                        citation_ids=[]
+                    ))
+            except Exception as err:
+                logger.error("ReasoningEngine | Failed during historical lookup: %s", err)
         
-        # 6. Recommendation Threshold Calculation
+        # Merge extracted signals with historical signals
+        all_signals = extracted_signals + historical_signals
+        
+        # 6. Signal Scoring Layer
+        scored_signals = SignalScorer.score_signals(all_signals)
+        
+        # 7. Recommendation Threshold Calculation
         recommendation = RecommendationCalculator.calculate_recommendation(scored_signals)
         
-        # 7. Confidence Calculation
+        # 8. Confidence Calculation
         confidence = ConfidenceCalculator.calculate_confidence(scored_signals, grounding_confidence_score)
         
         # Extract unique citations referenced in signals
@@ -98,7 +145,7 @@ class ReasoningEngine:
         if not cited_ids and scored_signals:
             cited_ids = allowed_citations
             
-        # 8. Record Signal Metrics (Step 2.4.9)
+        # 9. Record Signal & Historical Metrics (Step 2.4.9 / 2.5.10)
         if metrics:
             sig_count = len(scored_signals)
             pos_count = sum(1 for s in scored_signals if s.signal_type == SignalType.POSITIVE)
@@ -109,11 +156,28 @@ class ReasoningEngine:
             metrics.set_metadata("positive_signal_count", pos_count)
             metrics.set_metadata("negative_signal_count", neg_count)
             metrics.set_metadata("risk_signal_count", risk_count)
+            
+            # Historical metrics
+            metrics.set_metadata("historical_matches_found", len(historical_matches))
+            metrics.set_metadata("historical_signal_count", len(historical_signals))
+            if historical_matches:
+                avg_sim = sum(hm.similarity for hm in historical_matches) / len(historical_matches)
+                metrics.set_metadata("average_similarity", float(round(avg_sim, 4)))
+            else:
+                metrics.set_metadata("average_similarity", 0.0)
+
+        # Enhance reasoning with historical match context if matches found
+        final_reasoning = extraction.reasoning
+        if historical_matches:
+            # Append historical context explaining why the decision is reinforced/impacted by analogies
+            hm = historical_matches[0]
+            final_reasoning = f"{final_reasoning.strip()} A similar event ({hm.event}) occurred previously and {hm.observed_outcome.lower()}."
 
         return RecommendationResponse(
             recommendation=recommendation,
             confidence=confidence,
-            reasoning=extraction.reasoning,
+            reasoning=final_reasoning,
             citations=cited_ids,
-            signals=scored_signals
+            signals=scored_signals,
+            historical_matches=historical_matches
         )

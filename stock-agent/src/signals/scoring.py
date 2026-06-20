@@ -10,8 +10,11 @@ class SignalScorer:
     def score_signals(signals: List[Signal]) -> List[Signal]:
         """
         Assigns explicit deterministic score weights to each signal based on type.
+        Preserves pre-calculated scores if they are non-zero.
         """
         for sig in signals:
+            if sig.score != 0.0:
+                continue
             if sig.signal_type == SignalType.POSITIVE:
                 sig.score = 1.0
             elif sig.signal_type == SignalType.NEGATIVE:
