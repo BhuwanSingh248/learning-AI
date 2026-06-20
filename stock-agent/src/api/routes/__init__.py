@@ -130,6 +130,7 @@ async def analyze_query(request: AnalyzeRequest, db: AsyncSession = Depends(get_
     """
     Runs user query driven stock analysis pipeline.
     """
+    import json
     logger.info("API | Received /analyze request for symbol: %s, query: '%s'", request.symbol, request.query)
     
     metrics = MetricsCollector()
@@ -175,8 +176,16 @@ async def analyze_query(request: AnalyzeRequest, db: AsyncSession = Depends(get_
                 symbol_metrics.grounding_duration_ms
             )
             
+            # For ungrounded requests, return a JSON refusal formatted output
+            refusal_json = json.dumps({
+                "recommendation": "HOLD",
+                "confidence": 0.0,
+                "reasoning": f"Insufficient evidence available to answer this question reliably. Details: {refusal_reason}",
+                "citations": []
+            })
+            
             return AnalyzeResponse(
-                answer=f"Insufficient evidence available to answer this question reliably. Details: {refusal_reason}",
+                answer=refusal_json,
                 grounded=False,
                 confidence_score=confidence_score,
                 citations=[],
@@ -186,17 +195,40 @@ async def analyze_query(request: AnalyzeRequest, db: AsyncSession = Depends(get_
             
         # If grounded, build prompt and call LLM
         metrics.start_stage("prompt_build")
-        prompt = PromptBuilder.build_custom_query_prompt(request.query, citation_context.formatted_text)
+        payload = PromptBuilder.build_recommendation_prompt(
+            query=request.query,
+            symbol=request.symbol,
+            context_text=citation_context.formatted_text
+        )
         metrics.end_stage("prompt_build")
         
         metrics.start_stage("llm")
         metrics.set_model_name(llm_client.model_name)
-        answer = llm_client.generate_response(prompt)
+        answer = llm_client.generate_response(
+            prompt=payload.user_prompt,
+            system=payload.system_prompt,
+            format="json"
+        )
         metrics.end_stage("llm")
         
         metrics.end_stage("total")
         symbol_metrics = metrics.get_metrics()
         
+        # Parse JSON output from the model
+        final_citations = citation_context.citations
+        try:
+            recommendation_data = json.loads(answer)
+            confidence_score = float(recommendation_data.get("confidence", confidence_score))
+            cited_indices = recommendation_data.get("citations", [])
+            filtered_citations = [
+                c for c in citation_context.citations
+                if c.citation_id in cited_indices
+            ]
+            if filtered_citations:
+                final_citations = filtered_citations
+        except Exception as parse_err:
+            logger.warning("API | Failed to parse LLM structured response as JSON: %s", parse_err)
+            
         # structured logging
         logger.info(
             "[METRICS] Symbol=%s Total=%.1fms Retrieval=%.1fms Reranker=%.1fms Grounding=%.1fms LLM=%.1fms Grounded=True",
@@ -212,7 +244,7 @@ async def analyze_query(request: AnalyzeRequest, db: AsyncSession = Depends(get_
             answer=answer,
             grounded=True,
             confidence_score=confidence_score,
-            citations=citation_context.citations,
+            citations=final_citations,
             diagnostics=diagnostics,
             metrics=symbol_metrics
         )
