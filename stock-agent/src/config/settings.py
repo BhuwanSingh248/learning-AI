@@ -23,7 +23,7 @@ class Settings:
     GNEWS_API_KEY: str = os.getenv("GNEWS_API_KEY", "")
 
     # LLM settings
-    LLM_MODEL: str = os.getenv("LLM_MODEL", "phi3:mini")
+    LLM_MODEL: str = os.getenv("LLM_MODEL", "qwen2.5:3b")
     OLLAMA_LOCAL_URL: str = os.getenv("OLLAMA_LOCAL_URL", "http://localhost:11434")
 
     # chunking settings

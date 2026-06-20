@@ -32,3 +32,4 @@ wheels/
 
 # Virtual environments
 .venv
+benchmarks/

@@ -35,7 +35,7 @@ try:
     # We do a quick completion test to ensure mistral answers
     url = "http://localhost:11434/api/generate"
     data = json.dumps({
-        "model": "mistral",
+        "model": "qwen2.5:3b",
         "prompt": "Say hello world briefly.",
         "stream": False
     }).encode("utf-8")
