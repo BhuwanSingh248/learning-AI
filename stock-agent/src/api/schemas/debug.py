@@ -27,6 +27,9 @@ class DebugRetrievalResponse(BaseModel):
     bm25_results: list[RetrievedChunkResponse]
     merged_results: list[RetrievedChunkResponse]
 
+from typing import Any
+from src.metrics.models import PipelineMetrics
+
 class RerankedChunkResponse(BaseModel):
     chunk_id: str
     score: float
@@ -42,3 +45,8 @@ class DebugGroundingResponse(BaseModel):
     candidate_count: int
     best_score: float
     average_score: float
+
+class DebugAnalyzeResponse(BaseModel):
+    prompt: str
+    recommendation: Any
+    metrics: PipelineMetrics
