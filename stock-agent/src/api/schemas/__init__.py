@@ -96,10 +96,13 @@ class AnalyzeRequest(BaseModel):
     top_k: int = Field(10, description="Number of candidate chunks to fetch")
 
 
+from src.reasoning.models import RecommendationType
+
 class AnalyzeResponse(BaseModel):
-    answer: str
+    recommendation: RecommendationType
+    confidence: float
+    reasoning: str
     grounded: bool
-    confidence_score: float
     citations: List[Citation]
     diagnostics: Optional[dict] = None
     metrics: Optional[PipelineMetrics] = None

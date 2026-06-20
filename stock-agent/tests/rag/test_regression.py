@@ -143,7 +143,7 @@ def test_analyze_endpoint():
             ],
             grounding=mock_decision
         )
-        mock_generate.return_value = "Yes, Infosys is a buy."
+        mock_generate.return_value = '{"recommendation": "BUY", "confidence": 0.8, "reasoning": "Yes, Infosys is a buy.", "citations": [1]}'
         
         response = client.post(
             "/analyze",
@@ -152,9 +152,10 @@ def test_analyze_endpoint():
         
         assert response.status_code == 200
         data = response.json()
-        assert data["answer"] == "Yes, Infosys is a buy."
+        assert data["recommendation"] == "BUY"
+        assert data["confidence"] == 0.8
+        assert data["reasoning"] == "Yes, Infosys is a buy."
         assert data["grounded"] is True
-        assert data["confidence_score"] == -2.5
         assert len(data["citations"]) == 1
         assert data["citations"][0]["chunk_id"] == "c1"
 
@@ -179,10 +180,11 @@ def test_refusal_path():
         
         assert response.status_code == 200
         data = response.json()
-        assert "Insufficient evidence" in data["answer"]
-        assert "Top reranker score below threshold" in data["answer"]
+        assert data["recommendation"] == "INSUFFICIENT_DATA"
+        assert "Insufficient evidence" in data["reasoning"]
+        assert "Top reranker score below threshold" in data["reasoning"]
         assert data["grounded"] is False
-        assert data["confidence_score"] == -8.5
+        assert data["confidence"] == 0.0
         assert len(data["citations"]) == 0
 
 
@@ -224,7 +226,7 @@ def test_api_metrics_returned():
             ],
             grounding=mock_decision
         )
-        mock_generate.return_value = "Answer"
+        mock_generate.return_value = '{"recommendation": "BUY", "confidence": 0.9, "reasoning": "Passed", "citations": [1]}'
         
         # Test /analyze public endpoint
         response = client.post(

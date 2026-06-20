@@ -140,8 +140,7 @@ async def debug_analyze(request: AnalyzeRequest, db: AsyncSession = Depends(get_
     """
     Runs custom query driven stock analysis pipeline and returns full execution metrics.
     """
-    import json
-    from src.api.routes import rag_retriever, llm_client
+    from src.api.routes import rag_retriever, reasoning_engine
     from src.metrics import MetricsCollector
     from src.llm.prompt_builder import PromptBuilder
     
@@ -158,57 +157,37 @@ async def debug_analyze(request: AnalyzeRequest, db: AsyncSession = Depends(get_
         
         grounding_decision = citation_context.grounding
         is_grounded = grounding_decision.is_grounded if grounding_decision else False
+        refusal_reason = grounding_decision.reason if grounding_decision else "Grounding failed."
+        available_citation_ids = [c.citation_id for c in citation_context.citations]
         
         # Ensure grounded status is set on the metrics object
         metrics.set_grounded(is_grounded)
         
-        if not is_grounded:
-            refusal_reason = grounding_decision.reason if grounding_decision else "Grounding failed."
-            metrics.end_stage("total")
-            symbol_metrics = metrics.get_metrics()
-            return DebugAnalyzeResponse(
-                prompt="Not constructed (grounding failed)",
-                recommendation={
-                    "recommendation": "HOLD",
-                    "confidence": 0.0,
-                    "reasoning": f"Insufficient evidence available to answer this question reliably. Details: {refusal_reason}",
-                    "citations": []
-                },
-                metrics=symbol_metrics
-            )
+        # Build prompt for debug visualization
+        if is_grounded:
+            payload = PromptBuilder.build_recommendation_prompt(request.query, request.symbol, citation_context.formatted_text)
+            combined_prompt = f"System Prompt:\n{payload.system_prompt}\n\nUser Prompt:\n{payload.user_prompt}"
+        else:
+            combined_prompt = "Not constructed (grounding failed)"
             
-        metrics.start_stage("prompt_build")
-        payload = PromptBuilder.build_recommendation_prompt(request.query, request.symbol, citation_context.formatted_text)
-        metrics.end_stage("prompt_build")
-        
-        metrics.start_stage("llm")
-        metrics.set_model_name(llm_client.model_name)
-        raw_response = llm_client.generate_response(
-            prompt=payload.user_prompt,
-            system=payload.system_prompt,
-            format="json"
+        # Delegate execution, validation, parsing to ReasoningEngine
+        llm_decision = reasoning_engine.make_decision(
+            symbol=request.symbol,
+            query=request.query,
+            context_text=citation_context.formatted_text,
+            is_grounded=is_grounded,
+            available_citation_ids=available_citation_ids,
+            metrics=metrics,
+            refusal_reason=refusal_reason
         )
-        metrics.end_stage("llm")
         
         metrics.end_stage("total")
         symbol_metrics = metrics.get_metrics()
-        
-        # Parse JSON output from the model
-        try:
-            recommendation_data = json.loads(raw_response)
-        except Exception as parse_err:
-            recommendation_data = {
-                "recommendation": "HOLD",
-                "confidence": 0.0,
-                "reasoning": f"Parsing failed: {parse_err}. Raw response: {raw_response}",
-                "citations": []
-            }
-        
-        combined_prompt = f"System Prompt:\n{payload.system_prompt}\n\nUser Prompt:\n{payload.user_prompt}"
+        symbol_metrics.grounded = is_grounded
         
         return DebugAnalyzeResponse(
             prompt=combined_prompt,
-            recommendation=recommendation_data,
+            recommendation=llm_decision,
             metrics=symbol_metrics
         )
     except Exception as e:

@@ -29,7 +29,7 @@ from src.metrics import MetricsCollector
 from src.data.providers.openbb_provider import OpenBBProvider
 from src.data.services.data_service import DataService
 from src.llm.llm_client import LLMClient
-from src.llm.reasoning import ReasoningEngine
+from src.reasoning.reasoning_engine import ReasoningEngine
 from src.agent.stock_agent import StockAgent
 
 logger = setup_logger(__name__)
@@ -130,7 +130,6 @@ async def analyze_query(request: AnalyzeRequest, db: AsyncSession = Depends(get_
     """
     Runs user query driven stock analysis pipeline.
     """
-    import json
     logger.info("API | Received /analyze request for symbol: %s, query: '%s'", request.symbol, request.query)
     
     metrics = MetricsCollector()
@@ -148,7 +147,8 @@ async def analyze_query(request: AnalyzeRequest, db: AsyncSession = Depends(get_
         
         grounding_decision = citation_context.grounding
         is_grounded = grounding_decision.is_grounded if grounding_decision else False
-        confidence_score = grounding_decision.confidence_score if grounding_decision else 0.0
+        refusal_reason = grounding_decision.reason if grounding_decision else "Grounding failed."
+        available_citation_ids = [c.citation_id for c in citation_context.citations]
         
         # Ensure grounded status is set on the metrics object
         metrics.set_grounded(is_grounded)
@@ -161,90 +161,45 @@ async def analyze_query(request: AnalyzeRequest, db: AsyncSession = Depends(get_
             "grounding_reason": grounding_decision.reason if grounding_decision else "No grounding decision"
         }
         
-        if not is_grounded:
-            refusal_reason = grounding_decision.reason if grounding_decision else "Grounding failed."
-            metrics.end_stage("total")
-            symbol_metrics = metrics.get_metrics()
-            
-            # structured logging
-            logger.info(
-                "[METRICS] Symbol=%s Total=%.1fms Retrieval=%.1fms Reranker=%.1fms Grounding=%.1fms LLM=0.0ms Grounded=False",
-                request.symbol.upper(),
-                symbol_metrics.total_duration_ms,
-                symbol_metrics.retrieval_duration_ms,
-                symbol_metrics.reranker_duration_ms,
-                symbol_metrics.grounding_duration_ms
-            )
-            
-            # For ungrounded requests, return a JSON refusal formatted output
-            refusal_json = json.dumps({
-                "recommendation": "HOLD",
-                "confidence": 0.0,
-                "reasoning": f"Insufficient evidence available to answer this question reliably. Details: {refusal_reason}",
-                "citations": []
-            })
-            
-            return AnalyzeResponse(
-                answer=refusal_json,
-                grounded=False,
-                confidence_score=confidence_score,
-                citations=[],
-                diagnostics=diagnostics,
-                metrics=symbol_metrics
-            )
-            
-        # If grounded, build prompt and call LLM
-        metrics.start_stage("prompt_build")
-        payload = PromptBuilder.build_recommendation_prompt(
-            query=request.query,
+        # Delegate prompt building, model inference, parsing, validation to ReasoningEngine
+        llm_decision = reasoning_engine.make_decision(
             symbol=request.symbol,
-            context_text=citation_context.formatted_text
+            query=request.query,
+            context_text=citation_context.formatted_text,
+            is_grounded=is_grounded,
+            available_citation_ids=available_citation_ids,
+            metrics=metrics,
+            refusal_reason=refusal_reason
         )
-        metrics.end_stage("prompt_build")
-        
-        metrics.start_stage("llm")
-        metrics.set_model_name(llm_client.model_name)
-        answer = llm_client.generate_response(
-            prompt=payload.user_prompt,
-            system=payload.system_prompt,
-            format="json"
-        )
-        metrics.end_stage("llm")
         
         metrics.end_stage("total")
         symbol_metrics = metrics.get_metrics()
+        symbol_metrics.grounded = is_grounded
         
-        # Parse JSON output from the model
-        final_citations = citation_context.citations
-        try:
-            recommendation_data = json.loads(answer)
-            confidence_score = float(recommendation_data.get("confidence", confidence_score))
-            cited_indices = recommendation_data.get("citations", [])
-            filtered_citations = [
-                c for c in citation_context.citations
-                if c.citation_id in cited_indices
-            ]
-            if filtered_citations:
-                final_citations = filtered_citations
-        except Exception as parse_err:
-            logger.warning("API | Failed to parse LLM structured response as JSON: %s", parse_err)
-            
+        # Filter citations to only include those returned by the engine
+        filtered_citations = [
+            c for c in citation_context.citations
+            if c.citation_id in llm_decision.citations
+        ]
+        
         # structured logging
         logger.info(
-            "[METRICS] Symbol=%s Total=%.1fms Retrieval=%.1fms Reranker=%.1fms Grounding=%.1fms LLM=%.1fms Grounded=True",
+            "[METRICS] Symbol=%s Total=%.1fms Retrieval=%.1fms Reranker=%.1fms Grounding=%.1fms LLM=%.1fms Grounded=%s",
             request.symbol.upper(),
             symbol_metrics.total_duration_ms,
             symbol_metrics.retrieval_duration_ms,
             symbol_metrics.reranker_duration_ms,
             symbol_metrics.grounding_duration_ms,
-            symbol_metrics.llm_duration_ms
+            symbol_metrics.llm_duration_ms,
+            str(is_grounded)
         )
         
         return AnalyzeResponse(
-            answer=answer,
-            grounded=True,
-            confidence_score=confidence_score,
-            citations=final_citations,
+            recommendation=llm_decision.recommendation,
+            confidence=llm_decision.confidence,
+            reasoning=llm_decision.reasoning,
+            grounded=is_grounded,
+            citations=filtered_citations,
             diagnostics=diagnostics,
             metrics=symbol_metrics
         )
