@@ -33,12 +33,14 @@ class LLMClient:
         self.base_url = base_url.rstrip("/")
         self.api_endpoint = f"{self.base_url}/api/generate"
 
-    def generate_response(self, prompt: str, timeout_seconds: int = 120) -> str:
+    def generate_response(self, prompt: str, system: str | None = None, format: str | None = None, timeout_seconds: int = 120) -> str:
         """
         Sends a prompt to the LLM and retrieves the text response.
         
         Args:
             prompt: The text prompt to reason about.
+            system: Optional system instructions prompt.
+            format: Optional response format (e.g. "json").
             timeout_seconds: Amount of time to wait before falling back.
             
         Returns:
@@ -51,6 +53,10 @@ class LLMClient:
             "prompt": prompt,
             "stream": False
         }
+        if system:
+            payload["system"] = system
+        if format:
+            payload["format"] = format
         
         data = json.dumps(payload).encode("utf-8")
         req = urllib.request.Request(
