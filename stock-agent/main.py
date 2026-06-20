@@ -9,13 +9,16 @@ import uvicorn
 # Import centralized configuration and base modules
 from src.config.logger import logger
 from src.config.settings import settings
-from src.config.database import engine
+from src.config.database import engine, Base
+from src.rag.models import RagNewsMetadata  # Import to register models on Base.metadata
 from src.api.routes import router as api_router
 
 async def init_db():
     try:
-        # Check database connection asynchronously
+        # Check database connection and create tables if not available
         async with engine.begin() as connection:
+            await connection.run_sync(Base.metadata.create_all)
+            logger.info("Database tables initialized successfully (created if not present).")
             result = await connection.execute(text("SELECT 1"))
             logger.info("Database connection strictly verified via asyncpg! DB runs successfully.")
     except Exception as e:
