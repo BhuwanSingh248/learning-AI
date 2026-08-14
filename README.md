@@ -1,5 +1,5 @@
 # 📈 AI Stock Recommendation Agent (Advanced RAG Pipeline)
-# ui https://uxpilot.ai/a/all-designs
+# https://uxpilot.ai/a/ui-design?page=Gq8X7d7CTR5N876pxwcw
 Welcome to the **AI Stock Recommendation Agent** repository. This project implements a production-oriented investment intelligence backend that coordinates quantitative market signals, corporate actions, semantic news retrieval and local LLM reasoning.
 
 The core intelligence is an **Advanced RAG (Retrieval-Augmented Generation) pipeline** with hybrid retrieval, neural reranking, grounding gates and citation-aware context construction. The roadmap extends this foundation toward agentic workflows, evaluation, observability and production deployment.
