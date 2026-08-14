@@ -12,6 +12,10 @@ The diagram below is the primary architecture map for the project. It shows the 
 
 ![learning-AI end-to-end backend architecture](docs/learning-ai-architecture.svg)
 
+### Detailed component documentation
+
+For the responsibility, data flow, boundaries, current implementation status and planned evolution of each backend component, see **[Component Documentation](docs/components/README.md)**.
+
 ### How to read the diagram
 
 - **Solid blue boxes** = current/implemented backend architecture.
@@ -158,7 +162,7 @@ uv run pytest stock-agent/tests/
 * [grounding.py](stock-agent/src/rag/grounding.py): Grounding threshold evaluation.
 * [hybrid_retriever.py](stock-agent/src/rag/hybrid_retriever.py): Semantic + keyword retrieval merger.
 * [reranker.py](stock-agent/src/rag/reranker.py): CrossEncoder candidate ranking.
-* [stock_agent.py](stock-agent/src/agent/stock_agent.py): High-level orchestration layer.
+* [stock-agent/src/agent/stock_agent.py](stock-agent/src/agent/stock_agent.py): High-level orchestration layer.
 * [debug.py](stock-agent/src/api/routes/debug.py): Intermediate RAG diagnostics.
 
 ---
