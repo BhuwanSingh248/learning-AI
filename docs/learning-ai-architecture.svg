@@ -1,0 +1,150 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="1180" viewBox="0 0 1800 1180">
+<defs>
+  <style>
+    .title{font:700 34px Arial;fill:#172033}.sub{font:16px Arial;fill:#526070}.h{font:700 18px Arial;fill:#172033}.t{font:14px Arial;fill:#263548}.s{font:12px Arial;fill:#526070}.box{fill:#fff;stroke:#aab7c7;stroke-width:2}.live{fill:#eef6ff;stroke:#3578c4}.future{fill:#fff7ec;stroke:#d58b2a;stroke-width:2;stroke-dasharray:7 5}.support{fill:#f4f2ff;stroke:#7662b8}.arrow{stroke:#40556f;stroke-width:2.5;fill:none;marker-end:url(#m)}.ctrl{stroke:#2b8a57;stroke-width:2;fill:none;stroke-dasharray:7 5;marker-end:url(#m2)}
+  </style>
+  <marker id="m" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L10,3 L0,6 z" fill="#40556f"/></marker>
+  <marker id="m2" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L10,3 L0,6 z" fill="#2b8a57"/></marker>
+</defs>
+<rect width="1800" height="1180" fill="#fff"/>
+<text x="900" y="48" text-anchor="middle" class="title">learning-AI — End-to-End Backend, RAG &amp; Agentic AI Architecture</text>
+<text x="900" y="76" text-anchor="middle" class="sub">Online request flow + offline ingestion + evaluation + production platform</text>
+
+<!-- top flow -->
+<g transform="translate(35,105)">
+ <rect class="live" x="0" y="0" width="250" height="185" rx="14"/><text class="h" x="125" y="30" text-anchor="middle">1. API / REQUEST</text>
+ <rect class="box" x="20" y="50" width="210" height="48" rx="8"/><text class="t" x="125" y="80" text-anchor="middle">FastAPI / REST</text>
+ <rect class="box" x="20" y="112" width="210" height="48" rx="8"/><text class="t" x="125" y="142" text-anchor="middle">StockAgent Orchestrator</text>
+ <text class="s" x="125" y="177" text-anchor="middle">/suggest · /analyze · debug</text>
+</g>
+<g transform="translate(315,105)">
+ <rect class="live" x="0" y="0" width="250" height="185" rx="14"/><text class="h" x="125" y="30" text-anchor="middle">2. DATA &amp; SIGNALS</text>
+ <rect class="box" x="20" y="50" width="210" height="42" rx="8"/><text class="t" x="125" y="76" text-anchor="middle">DataService / Providers</text>
+ <rect class="box" x="20" y="102" width="100" height="42" rx="8"/><text class="t" x="70" y="128" text-anchor="middle">OpenBB</text>
+ <rect class="box" x="130" y="102" width="100" height="42" rx="8"/><text class="t" x="180" y="128" text-anchor="middle">News APIs</text>
+ <text class="s" x="125" y="171" text-anchor="middle">prices · events · news · indicators</text>
+</g>
+<g transform="translate(595,105)">
+ <rect class="live" x="0" y="0" width="250" height="185" rx="14"/><text class="h" x="125" y="30" text-anchor="middle">3. RAG INGESTION</text>
+ <rect class="box" x="20" y="50" width="210" height="42" rx="8"/><text class="t" x="125" y="76" text-anchor="middle">Normalize / Deduplicate</text>
+ <rect class="box" x="20" y="102" width="100" height="42" rx="8"/><text class="t" x="70" y="128" text-anchor="middle">Chunker</text>
+ <rect class="box" x="130" y="102" width="100" height="42" rx="8"/><text class="t" x="180" y="128" text-anchor="middle">Embedder</text>
+ <text class="s" x="125" y="171" text-anchor="middle">metadata → PostgreSQL · vectors → FAISS</text>
+</g>
+<g transform="translate(875,105)">
+ <rect class="live" x="0" y="0" width="250" height="185" rx="14"/><text class="h" x="125" y="30" text-anchor="middle">4. HYBRID RETRIEVAL</text>
+ <rect class="box" x="20" y="50" width="95" height="48" rx="8"/><text class="t" x="67" y="79" text-anchor="middle">FAISS</text>
+ <rect class="box" x="135" y="50" width="95" height="48" rx="8"/><text class="t" x="182" y="79" text-anchor="middle">BM25</text>
+ <rect class="box" x="20" y="112" width="210" height="42" rx="8"/><text class="t" x="125" y="138" text-anchor="middle">RRF / Candidate Fusion</text>
+ <text class="s" x="125" y="173" text-anchor="middle">symbol-aware · top-K · deduplicate</text>
+</g>
+<g transform="translate(1155,105)">
+ <rect class="live" x="0" y="0" width="250" height="185" rx="14"/><text class="h" x="125" y="30" text-anchor="middle">5. RERANK + GROUND</text>
+ <rect class="box" x="20" y="50" width="210" height="42" rx="8"/><text class="t" x="125" y="76" text-anchor="middle">CrossEncoder Reranker</text>
+ <rect class="box" x="20" y="102" width="210" height="42" rx="8"/><text class="t" x="125" y="128" text-anchor="middle">Grounding Gate</text>
+ <text class="s" x="125" y="169" text-anchor="middle">ALLOW → context · REFUSE → neutral</text>
+</g>
+<g transform="translate(1435,105)">
+ <rect class="live" x="0" y="0" width="330" height="185" rx="14"/><text class="h" x="165" y="30" text-anchor="middle">6. LLM REASONING &amp; RESPONSE</text>
+ <rect class="box" x="20" y="50" width="135" height="42" rx="8"/><text class="t" x="87" y="76" text-anchor="middle">Citations</text>
+ <rect class="box" x="175" y="50" width="135" height="42" rx="8"/><text class="t" x="242" y="76" text-anchor="middle">Prompt Builder</text>
+ <rect class="box" x="20" y="102" width="135" height="42" rx="8"/><text class="t" x="87" y="128" text-anchor="middle">Ollama / LLM</text>
+ <rect class="box" x="175" y="102" width="135" height="42" rx="8"/><text class="t" x="242" y="128" text-anchor="middle">Structured Output</text>
+ <text class="s" x="165" y="169" text-anchor="middle">→ stream → API response</text>
+</g>
+<path class="arrow" d="M285 197 H315"/><path class="arrow" d="M565 197 H595"/><path class="arrow" d="M845 197 H875"/><path class="arrow" d="M1125 197 H1155"/><path class="arrow" d="M1405 197 H1435"/>
+
+<!-- supporting systems -->
+<g transform="translate(35,330)">
+ <rect class="support" x="0" y="0" width="550" height="240" rx="14"/><text class="h" x="275" y="30" text-anchor="middle">7. AGENTIC AI LAYER (ROADMAP)</text>
+ <rect class="box" x="20" y="55" width="155" height="48" rx="8"/><text class="t" x="97" y="84" text-anchor="middle">Agent Router</text>
+ <rect class="box" x="195" y="55" width="155" height="48" rx="8"/><text class="t" x="272" y="84" text-anchor="middle">State Graph</text>
+ <rect class="box" x="370" y="55" width="155" height="48" rx="8"/><text class="t" x="447" y="84" text-anchor="middle">Tool Calling</text>
+ <rect class="box" x="20" y="125" width="155" height="48" rx="8"/><text class="t" x="97" y="154" text-anchor="middle">Market / News Tools</text>
+ <rect class="box" x="195" y="125" width="155" height="48" rx="8"/><text class="t" x="272" y="154" text-anchor="middle">Memory</text>
+ <rect class="box" x="370" y="125" width="155" height="48" rx="8"/><text class="t" x="447" y="154" text-anchor="middle">MCP</text>
+ <text class="s" x="275" y="205" text-anchor="middle">planned: tools + state + memory + controlled loops</text>
+</g>
+<g transform="translate(615,330)">
+ <rect class="future" x="0" y="0" width="550" height="240" rx="14"/><text class="h" x="275" y="30" text-anchor="middle">8. OFFLINE INGESTION &amp; WORKERS</text>
+ <rect class="box" x="20" y="55" width="155" height="48" rx="8"/><text class="t" x="97" y="84" text-anchor="middle">Celery + Redis</text>
+ <rect class="box" x="195" y="55" width="155" height="48" rx="8"/><text class="t" x="272" y="84" text-anchor="middle">Fetch / Normalize</text>
+ <rect class="box" x="370" y="55" width="155" height="48" rx="8"/><text class="t" x="447" y="84" text-anchor="middle">Embed / Index</text>
+ <rect class="box" x="20" y="125" width="155" height="48" rx="8"/><text class="t" x="97" y="154" text-anchor="middle">Retry + DLQ</text>
+ <rect class="box" x="195" y="125" width="155" height="48" rx="8"/><text class="t" x="272" y="154" text-anchor="middle">Index Versioning</text>
+ <rect class="box" x="370" y="125" width="155" height="48" rx="8"/><text class="t" x="447" y="154" text-anchor="middle">Scheduled Refresh</text>
+ <text class="s" x="275" y="205" text-anchor="middle">keeps ingestion out of the request path</text>
+</g>
+<g transform="translate(1195,330)">
+ <rect class="future" x="0" y="0" width="570" height="240" rx="14"/><text class="h" x="285" y="30" text-anchor="middle">9. CACHING &amp; PERFORMANCE</text>
+ <rect class="box" x="20" y="55" width="160" height="48" rx="8"/><text class="t" x="100" y="84" text-anchor="middle">Redis Cache</text>
+ <rect class="box" x="205" y="55" width="160" height="48" rx="8"/><text class="t" x="285" y="84" text-anchor="middle">Embedding Cache</text>
+ <rect class="box" x="390" y="55" width="160" height="48" rx="8"/><text class="t" x="470" y="84" text-anchor="middle">Retrieval Cache</text>
+ <rect class="box" x="20" y="125" width="160" height="48" rx="8"/><text class="t" x="100" y="154" text-anchor="middle">TTL / Invalidate</text>
+ <rect class="box" x="205" y="125" width="160" height="48" rx="8"/><text class="t" x="285" y="154" text-anchor="middle">Hot-Key Protection</text>
+ <rect class="box" x="390" y="125" width="160" height="48" rx="8"/><text class="t" x="470" y="154" text-anchor="middle">Latency Metrics</text>
+ <text class="s" x="285" y="205" text-anchor="middle">provider limits · lower latency · lower cost</text>
+</g>
+
+<!-- evaluation/platform -->
+<g transform="translate(35,610)">
+ <rect class="support" x="0" y="0" width="550" height="240" rx="14"/><text class="h" x="275" y="30" text-anchor="middle">10. EVALUATION &amp; AI QUALITY</text>
+ <rect class="box" x="20" y="55" width="155" height="48" rx="8"/><text class="t" x="97" y="84" text-anchor="middle">Golden Dataset</text>
+ <rect class="box" x="195" y="55" width="155" height="48" rx="8"/><text class="t" x="272" y="84" text-anchor="middle">Recall / MRR / NDCG</text>
+ <rect class="box" x="370" y="55" width="155" height="48" rx="8"/><text class="t" x="447" y="84" text-anchor="middle">LLM-as-Judge</text>
+ <rect class="box" x="20" y="125" width="155" height="48" rx="8"/><text class="t" x="97" y="154" text-anchor="middle">Grounding Metrics</text>
+ <rect class="box" x="195" y="125" width="155" height="48" rx="8"/><text class="t" x="272" y="154" text-anchor="middle">Prompt Injection Tests</text>
+ <rect class="box" x="370" y="125" width="155" height="48" rx="8"/><text class="t" x="447" y="154" text-anchor="middle">Regression Gates</text>
+ <text class="s" x="275" y="205" text-anchor="middle">measure quality before claiming improvement</text>
+</g>
+<g transform="translate(615,610)">
+ <rect class="support" x="0" y="0" width="550" height="240" rx="14"/><text class="h" x="275" y="30" text-anchor="middle">11. OBSERVABILITY</text>
+ <rect class="box" x="20" y="55" width="155" height="48" rx="8"/><text class="t" x="97" y="84" text-anchor="middle">OpenTelemetry</text>
+ <rect class="box" x="195" y="55" width="155" height="48" rx="8"/><text class="t" x="272" y="84" text-anchor="middle">Metrics / Prometheus</text>
+ <rect class="box" x="370" y="55" width="155" height="48" rx="8"/><text class="t" x="447" y="84" text-anchor="middle">Langfuse / Traces</text>
+ <rect class="box" x="20" y="125" width="155" height="48" rx="8"/><text class="t" x="97" y="154" text-anchor="middle">Latency / Tokens</text>
+ <rect class="box" x="195" y="125" width="155" height="48" rx="8"/><text class="t" x="272" y="154" text-anchor="middle">Cost / Model</text>
+ <rect class="box" x="370" y="125" width="155" height="48" rx="8"/><text class="t" x="447" y="154" text-anchor="middle">Failure Traces</text>
+ <text class="s" x="275" y="205" text-anchor="middle">trace: request → retrieval → rerank → LLM → response</text>
+</g>
+<g transform="translate(1195,610)">
+ <rect class="future" x="0" y="0" width="570" height="240" rx="14"/><text class="h" x="285" y="30" text-anchor="middle">12. MODEL ENGINEERING</text>
+ <rect class="box" x="20" y="55" width="160" height="48" rx="8"/><text class="t" x="100" y="84" text-anchor="middle">FinBERT</text>
+ <rect class="box" x="205" y="55" width="160" height="48" rx="8"/><text class="t" x="285" y="84" text-anchor="middle">LoRA / QLoRA</text>
+ <rect class="box" x="390" y="55" width="160" height="48" rx="8"/><text class="t" x="470" y="84" text-anchor="middle">SFT</text>
+ <rect class="box" x="20" y="125" width="160" height="48" rx="8"/><text class="t" x="100" y="154" text-anchor="middle">DPO</text>
+ <rect class="box" x="205" y="125" width="160" height="48" rx="8"/><text class="t" x="285" y="154" text-anchor="middle">Model Gateway</text>
+ <rect class="box" x="390" y="125" width="160" height="48" rx="8"/><text class="t" x="470" y="154" text-anchor="middle">Quantization</text>
+ <text class="s" x="285" y="205" text-anchor="middle">evaluate every model change against the golden set</text>
+</g>
+
+<!-- deployment -->
+<g transform="translate(35,890)">
+ <rect class="future" x="0" y="0" width="820" height="220" rx="14"/><text class="h" x="410" y="30" text-anchor="middle">13. DEPLOYMENT / INFRASTRUCTURE</text>
+ <rect class="box" x="20" y="55" width="175" height="48" rx="8"/><text class="t" x="107" y="84" text-anchor="middle">Docker Compose</text>
+ <rect class="box" x="215" y="55" width="175" height="48" rx="8"/><text class="t" x="302" y="84" text-anchor="middle">AWS API / Workers</text>
+ <rect class="box" x="410" y="55" width="175" height="48" rx="8"/><text class="t" x="497" y="84" text-anchor="middle">PostgreSQL / Redis</text>
+ <rect class="box" x="605" y="55" width="175" height="48" rx="8"/><text class="t" x="692" y="84" text-anchor="middle">Object Storage</text>
+ <rect class="box" x="20" y="125" width="175" height="48" rx="8"/><text class="t" x="107" y="154" text-anchor="middle">Secrets / IAM</text>
+ <rect class="box" x="215" y="125" width="175" height="48" rx="8"/><text class="t" x="302" y="154" text-anchor="middle">Backups</text>
+ <rect class="box" x="410" y="125" width="175" height="48" rx="8"/><text class="t" x="497" y="154" text-anchor="middle">Autoscaling</text>
+ <rect class="box" x="605" y="125" width="175" height="48" rx="8"/><text class="t" x="692" y="154" text-anchor="middle">Health / Readiness</text>
+</g>
+<g transform="translate(885,890)">
+ <rect class="future" x="0" y="0" width="880" height="220" rx="14"/><text class="h" x="440" y="30" text-anchor="middle">14. CI/CD + DATA / EXPERIMENT PLATFORM</text>
+ <rect class="box" x="20" y="55" width="190" height="48" rx="8"/><text class="t" x="115" y="84" text-anchor="middle">GitHub Actions / Jenkins</text>
+ <rect class="box" x="230" y="55" width="190" height="48" rx="8"/><text class="t" x="325" y="84" text-anchor="middle">Tests + AI Gates</text>
+ <rect class="box" x="440" y="55" width="190" height="48" rx="8"/><text class="t" x="535" y="84" text-anchor="middle">JFrog / Registry</text>
+ <rect class="box" x="650" y="55" width="190" height="48" rx="8"/><text class="t" x="745" y="84" text-anchor="middle">Versioned Releases</text>
+ <rect class="box" x="20" y="125" width="190" height="48" rx="8"/><text class="t" x="115" y="154" text-anchor="middle">Snowflake / Snowpark</text>
+ <rect class="box" x="230" y="125" width="190" height="48" rx="8"/><text class="t" x="325" y="154" text-anchor="middle">Experiment Datasets</text>
+ <rect class="box" x="440" y="125" width="190" height="48" rx="8"/><text class="t" x="535" y="154" text-anchor="middle">Model / Prompt Versions</text>
+ <rect class="box" x="650" y="125" width="190" height="48" rx="8"/><text class="t" x="745" y="154" text-anchor="middle">Compare Results</text>
+</g>
+
+<!-- feedback loops -->
+<path class="ctrl" d="M310 850 C310 820 300 300 300 290"/>
+<path class="ctrl" d="M900 610 C900 560 850 520 840 520"/>
+<path class="ctrl" d="M1470 610 C1470 540 1350 500 1350 290"/>
+<text x="70" y="1145" class="s">SOLID = current/confirmed architecture · dashed boxes = planned backlog · green dashed arrows = feedback/control/evaluation loops</text>
+</svg>

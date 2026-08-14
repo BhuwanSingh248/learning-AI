@@ -47,6 +47,10 @@ app = FastAPI(
     lifespan=lifespan
 )
 
+# Configure Security middleware (Auth, Rate limits, Budgets, Quotas, Audit logging)
+from src.security.middleware import SecurityMiddleware
+app.add_middleware(SecurityMiddleware)
+
 # Configure CORS middleware
 app.add_middleware(
     CORSMiddleware,

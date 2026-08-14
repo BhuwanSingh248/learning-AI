@@ -1,0 +1,29 @@
+
+> ui-stock-agent-app@0.1.0 dev
+> next dev -p 3000
+
+   ▲ Next.js 15.5.15
+   - Local:        http://localhost:3000
+   - Network:      http://192.168.1.37:3000
+   - Environments: .env.local
+
+ ✓ Starting...
+ ✓ Ready in 1869ms
+ ○ Compiling /status ...
+ ✓ Compiled /status in 2.6s (711 modules)
+ GET /status 200 in 2921ms
+ GET /status 200 in 77ms
+ GET /status 200 in 190ms
+ ○ Compiling / ...
+ ✓ Compiled / in 1588ms (1800 modules)
+ GET / 200 in 1777ms
+ GET / 200 in 27ms
+ GET / 200 in 37ms
+ ✓ Compiled /stocks/[symbol] in 419ms (1794 modules)
+ GET /stocks/NVDA 200 in 916ms
+ GET / 200 in 38ms
+ GET /stocks/AEGISLOG.NS 200 in 45ms
+ GET /stocks/AEGISLOG.NS 200 in 33ms
+ GET / 200 in 29ms
+ GET /stocks/MTARTECH.NS 200 in 34ms
+ GET /stocks/UNICHEMLAB.NS 200 in 123ms
