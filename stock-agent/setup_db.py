@@ -2,7 +2,7 @@ from sqlalchemy import create_engine, text
 from src.rag.models import Base
 
 # Admin engine — connects to postgres DB for user/db management tasks
-admin_engine = create_engine("postgresql://postgres:7844@localhost:5432/postgres", isolation_level="AUTOCOMMIT")
+admin_engine = create_engine("postgresql://postgres:postgres@localhost:5432/postgres", isolation_level="AUTOCOMMIT")
 
 try:
     with admin_engine.connect() as conn:
@@ -28,7 +28,7 @@ except Exception as e:
     print(f"Error occurred: {e}")
 
 # App engine — connects to stock_agent DB to create application tables
-app_engine = create_engine("postgresql://postgres:7844@localhost:5432/stock_agent")
+app_engine = create_engine("postgresql://postgres:postgres@localhost:5432/stock_agent")
 
 try:
     Base.metadata.create_all(app_engine)

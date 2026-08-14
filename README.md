@@ -110,8 +110,8 @@ MARKETAUX_API_KEY=your_key_here
 GNEWS_API_KEY=your_key_here
 LLM_MODEL=phi3:mini
 OLLAMA_LOCAL_URL=http://localhost:11434
-GROUNDING_MIN_SCORE=-5.0
-GROUNDING_MIN_TOP3_AVERAGE=-9.0
+GROUNDING_MIN_SCORE=-7.0
+GROUNDING_MIN_TOP3_AVERAGE=-10.5
 GROUNDING_MIN_CHUNKS=1
 ```
 
@@ -133,11 +133,15 @@ The server listens on **`http://127.0.0.1:8000`**. Interactive Swagger documenta
 
 ---
 
-## 🧪 Verification & Debugging
+## 🧪 Verification, Evaluation & Benchmarking
 
 ### 1. Subsystem Readiness Probes
+<<<<<<< HEAD
+The **`GET /health`** route performs real runtime status checks of external subsystems (confirming PostgreSQL async reachability, FAISS indexes loaded on disk, and Ollama server responsiveness). It also verifies news freshness, warning if no new articles have been indexed within the last 24 hours.
+=======
 
 The **`GET /health`** route performs runtime checks of external subsystems such as PostgreSQL, FAISS indexes and the Ollama server.
+>>>>>>> 842a13e9f4f0b5095483048aa65f5687f97e6318
 
 ### 2. Intermediate QA Debug Routes
 
@@ -153,10 +157,51 @@ Use debug POST endpoints to trace the RAG pipeline without calling the LLM:
 uv run pytest stock-agent/tests/
 ```
 
+### 4. Golden Dataset Evaluation Framework (Phase 2.7 & Closure)
+Evaluate the active model against a golden dataset of 100+ test cases:
+```bash
+# Run the evaluation engine (in mock/simulation mode)
+uv run python stock-agent/evaluation/run_evaluation.py --mock
+```
+This produces `evaluation_report.md` summarizing precision, recall, and grounding metrics.
+
+### 5. Multi-Model Benchmarking Leaderboard (Phase 2.8)
+Benchmark and rank all supported models (`qwen2.5:3b`, `mistral:7b`, `llama3.1:8b`, `phi4`, `gemma3`) on a weighted score matrix:
+```bash
+# Run the benchmark engine
+uv run python stock-agent/evaluation/run_benchmark.py --mock
+```
+This generates:
+* Model comparison report: [model_benchmark_report.md](file:///c:/Users/bhuwa/study/ai_stock_market/stock-agent/evaluation/model_benchmark_report.md)
+* Comparison rankings data: [model_rankings.json](file:///c:/Users/bhuwa/study/ai_stock_market/stock-agent/evaluation/model_rankings.json)
+* Captured baseline configs: `stock-agent/evaluation/baselines/*.json`
+
+### 6. Phase 2 Closure API Endpoints
+The following endpoints were added to support frontend integrations and diagnostics:
+* **`GET /capabilities`**: Returns lists of supported and unsupported capabilities (e.g. `news_analysis`, `recommendations`, etc.).
+* **`GET /models`**: Returns the active model configurations.
+* **`GET /pipeline/status`**: Returns health checks for critical RAG pipeline components: database, FAISS index, cross-encoder reranker, and local Ollama server status.
+* **`GET /evaluation/results`**: Exposes the latest golden dataset evaluation metrics scorecard.
+* **`GET /benchmark/results`**: Exposes the multi-model benchmarking rankings.
+* **`POST /historical-events/search`**: Exposes semantic similarity lookups over historical macro events (e.g., searching for war or tariffs).
+* **`POST /signals`**: Exposes signal extraction analytics over raw recommendation texts.
+
 ---
 
 ## 📂 Codebase Tour
 
+<<<<<<< HEAD
+* [main.py](file:///c:/Users/bhuwa/study/ai_stock_market/stock-agent/main.py): Application entry point and lifespan connection hooks.
+* [src/config/settings.py](file:///c:/Users/bhuwa/study/ai_stock_market/stock-agent/src/config/settings.py): Centralized configuration loader.
+* [src/metrics/](file:///c:/Users/bhuwa/study/ai_stock_market/stock-agent/src/metrics/): Metrics models and timing collection service.
+* [src/llm/](file:///c:/Users/bhuwa/study/ai_stock_market/stock-agent/src/llm/): Model registry, prompt builders, text prompts, and provider abstractions.
+* [src/rag/grounding.py](file:///c:/Users/bhuwa/study/ai_stock_market/stock-agent/src/rag/grounding.py): Evaluator applying the calibrated threshold rules.
+* [src/rag/hybrid_retriever.py](file:///c:/Users/bhuwa/study/ai_stock_market/stock-agent/src/rag/hybrid_retriever.py): Semantic and keyword search query merger.
+* [src/rag/reranker.py](file:///c:/Users/bhuwa/study/ai_stock_market/stock-agent/src/rag/reranker.py): Logit score ranks candidates.
+* [src/agent/stock_agent.py](file:///c:/Users/bhuwa/study/ai_stock_market/stock-agent/src/agent/stock_agent.py): High-level brain orchestrating the analytical flow.
+* [src/api/routes/debug.py](file:///c:/Users/bhuwa/study/ai_stock_market/stock-agent/src/api/routes/debug.py): REST routers exposing intermediate RAG matrices.
+* [evaluation/](file:///c:/Users/bhuwa/study/ai_stock_market/stock-agent/evaluation/): Golden dataset, run scripts, ranking algorithms, and baseline metrics folder.
+=======
 * [main.py](stock-agent/main.py): Application entry point and lifespan hooks.
 * [settings.py](stock-agent/src/config/settings.py): Centralized configuration loader.
 * [grounding.py](stock-agent/src/rag/grounding.py): Grounding threshold evaluation.
@@ -164,6 +209,7 @@ uv run pytest stock-agent/tests/
 * [reranker.py](stock-agent/src/rag/reranker.py): CrossEncoder candidate ranking.
 * [stock-agent/src/agent/stock_agent.py](stock-agent/src/agent/stock_agent.py): High-level orchestration layer.
 * [debug.py](stock-agent/src/api/routes/debug.py): Intermediate RAG diagnostics.
+>>>>>>> 842a13e9f4f0b5095483048aa65f5687f97e6318
 
 ---
 

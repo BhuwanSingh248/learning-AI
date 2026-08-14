@@ -13,7 +13,8 @@ from src.config.logger import setup_logger
 from src.data.services.data_service import DataService
 from src.processing.data_validator import DataValidator
 from src.analysis.market_analyzer import MarketAnalyzer
-from src.llm.reasoning import ReasoningEngine, LLMDecision
+from src.reasoning.reasoning_engine import ReasoningEngine
+from src.reasoning.models import RecommendationResponse
 from src.rag.retriever import RAGRetriever
 from src.rag.indexer import NewsIndexer
 
@@ -111,6 +112,7 @@ class StockAgent:
                 context_text = ""
                 context_items = []
                 grounding_decision = None
+                available_citation_ids = []
                 if self.rag_retriever:
                     try:
                         async def _fetch():
@@ -120,22 +122,27 @@ class StockAgent:
                         res = await _fetch()
                         context_text = res.formatted_context
                         context_items = res.context_items
+                        available_citation_ids = [c.citation_id for c in res.citations]
                         if hasattr(res, "grounding") and res.grounding:
                             grounding_decision = res.grounding
                     except Exception as e:
                         logger.warning("StockAgent | Failed to retrieve RAG context for %s: %s", symbol, e)
 
-                # Control Flow: Enforce ALLOW / REFUSE paths based on grounding validation
-                if grounding_decision and not grounding_decision.is_grounded:
-                    logger.warning("StockAgent | Grounding refusal triggered for %s. Bypassing LLM call.", symbol)
-                    llm_decision = LLMDecision(
-                        symbol=symbol,
-                        decision="Neutral",
-                        reason=f"Insufficient evidence available to answer this question reliably. Details: {grounding_decision.reason}"
-                    )
-                else:
-                    llm_decision = self.reasoning_engine.make_decision(signals, context_text, metrics=metrics)
-
+                is_grounded = grounding_decision.is_grounded if grounding_decision else True
+                refusal_reason = grounding_decision.reason if grounding_decision else "Grounding failed."
+                
+                query = f"Based on market signals (Trend: {signals.price_signals.trend}, Momentum: {signals.price_signals.momentum}, Sentiment: {signals.news_signals.sentiment_score}, Event Score: {signals.event_signals.event_score}), should I buy, hold, or sell {symbol}?"
+                
+                llm_decision = self.reasoning_engine.make_decision(
+                    symbol=symbol,
+                    query=query,
+                    context_text=context_text,
+                    is_grounded=is_grounded,
+                    available_citation_ids=available_citation_ids,
+                    metrics=metrics,
+                    refusal_reason=refusal_reason,
+                    grounding_confidence_score=grounding_decision.confidence_score if grounding_decision else 0.0
+                )
 
                 # 5. Calculate Ranking Score 
                 # Formula: (momentum * 0.4) + (sentiment * 0.4) + (event_score * 0.2)
@@ -176,6 +183,7 @@ class StockAgent:
 
                 metrics.end_stage("total")
                 symbol_metrics = metrics.get_metrics()
+                symbol_metrics.grounded = is_grounded
                 
                 # Emit structured logs for Langfuse / monitoring
                 logger.info(
@@ -192,8 +200,8 @@ class StockAgent:
                 suggestions.append(RankedSuggestion(
                     symbol=symbol,
                     score=round(score, 4),
-                    decision=llm_decision.decision,
-                    reason=llm_decision.reason,
+                    decision=llm_decision.recommendation.value,
+                    reason=llm_decision.reasoning,
                     signal_breakdown=signal_breakdown,
                     rag=rag_info,
                     prediction=prediction_meta,

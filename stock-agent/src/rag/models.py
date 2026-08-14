@@ -37,3 +37,7 @@ class NewsChunk:
     timestamp:str
     text:str
     
+
+# Register MetricRecord on the SQLAlchemy Base metadata
+from src.metrics.models import MetricRecord
+    

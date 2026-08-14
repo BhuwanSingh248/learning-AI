@@ -1,0 +1,122 @@
+[
+  {
+    "category": "strong",
+    "symbol": "INFY",
+    "query": "Recent business developments and earnings reports for Infosys",
+    "expected_grounded": true
+  },
+  {
+    "category": "strong",
+    "symbol": "AAPL",
+    "query": "Apple solid earnings growth and AI updates",
+    "expected_grounded": true
+  },
+  {
+    "category": "strong",
+    "symbol": "INFY",
+    "query": "Infosys revenue growth margins and new contracts",
+    "expected_grounded": true
+  },
+  {
+    "category": "strong",
+    "symbol": "AAPL",
+    "query": "Apple iPhone sales numbers and financial forecast",
+    "expected_grounded": true
+  },
+  {
+    "category": "strong",
+    "symbol": "INFY",
+    "query": "New tariff announcements impact on IT sector export",
+    "expected_grounded": true
+  },
+  {
+    "category": "weak",
+    "symbol": "INFY",
+    "query": "Will Infosys build a city on Mars next year?",
+    "expected_grounded": false
+  },
+  {
+    "category": "weak",
+    "symbol": "AAPL",
+    "query": "How to make a chocolate chip cookie at home?",
+    "expected_grounded": false
+  },
+  {
+    "category": "weak",
+    "symbol": "INFY",
+    "query": "Who is the prime minister of India currently?",
+    "expected_grounded": false
+  },
+  {
+    "category": "weak",
+    "symbol": "AAPL",
+    "query": "Will Apple launch a space exploration rocket to Jupiter?",
+    "expected_grounded": false
+  },
+  {
+    "category": "weak",
+    "symbol": "INFY",
+    "query": "What is the average temperature in Paris in July?",
+    "expected_grounded": false
+  },
+  {
+    "category": "neutral",
+    "symbol": "INFY",
+    "query": "Should I buy Infosys stock right now?",
+    "expected_grounded": true
+  },
+  {
+    "category": "neutral",
+    "symbol": "AAPL",
+    "query": "Is Apple stock a buy or sell after recent movements?",
+    "expected_grounded": true
+  },
+  {
+    "category": "neutral",
+    "symbol": "INFY",
+    "query": "Infosys performance analysis and buy recommendation",
+    "expected_grounded": true
+  },
+  {
+    "category": "neutral",
+    "symbol": "AAPL",
+    "query": "Apple stock price analysis and future projection",
+    "expected_grounded": true
+  },
+  {
+    "category": "neutral",
+    "symbol": "INFY",
+    "query": "Is Infosys stock currently a hold?",
+    "expected_grounded": true
+  },
+  {
+    "category": "failure",
+    "symbol": "INFY",
+    "query": "",
+    "expected_grounded": false
+  },
+  {
+    "category": "failure",
+    "symbol": "XYZ_INVALID",
+    "query": "Should I buy this stock?",
+    "expected_grounded": false
+  },
+  {
+    "category": "failure",
+    "symbol": "",
+    "query": "Empty symbol request test",
+    "expected_grounded": false
+  },
+  {
+    "category": "failure",
+    "symbol": "INFY",
+    "query": "   ",
+    "expected_grounded": false
+  },
+  {
+    "category": "failure",
+    "symbol": "UNKNOWN_TICKER",
+    "query": "Will this unknown stock rise in value?",
+    "expected_grounded": false
+  }
+]

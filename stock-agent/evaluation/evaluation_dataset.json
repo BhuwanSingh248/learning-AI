@@ -1,0 +1,1249 @@
+[
+  {
+    "symbol": "INFY",
+    "query": "Recent business developments and Q4 earnings reports for Infosys",
+    "expected_grounded": true,
+    "expected_recommendation": "BUY",
+    "expected_signal_types": [
+      "POSITIVE"
+    ],
+    "expected_evidence_keywords": [
+      "developments",
+      "earnings",
+      "reports",
+      "infosys"
+    ]
+  },
+  {
+    "symbol": "INFY",
+    "query": "Infosys revenue growth margins and new contracts",
+    "expected_grounded": true,
+    "expected_recommendation": "BUY",
+    "expected_signal_types": [
+      "POSITIVE"
+    ],
+    "expected_evidence_keywords": [
+      "revenue",
+      "growth",
+      "margins",
+      "contracts"
+    ]
+  },
+  {
+    "symbol": "INFY",
+    "query": "Infosys large contract wins digital transformation",
+    "expected_grounded": true,
+    "expected_recommendation": "BUY",
+    "expected_signal_types": [
+      "POSITIVE"
+    ],
+    "expected_evidence_keywords": [
+      "contract",
+      "wins",
+      "digital",
+      "transformation"
+    ]
+  },
+  {
+    "symbol": "INFY",
+    "query": "Infosys positive guidance and optimistic forecast",
+    "expected_grounded": true,
+    "expected_recommendation": "BUY",
+    "expected_signal_types": [
+      "POSITIVE"
+    ],
+    "expected_evidence_keywords": [
+      "guidance",
+      "forecast",
+      "positive",
+      "growth"
+    ]
+  },
+  {
+    "symbol": "INFY",
+    "query": "Infosys expansion plans in European markets",
+    "expected_grounded": true,
+    "expected_recommendation": "BUY",
+    "expected_signal_types": [
+      "POSITIVE"
+    ],
+    "expected_evidence_keywords": [
+      "expansion",
+      "europe",
+      "markets",
+      "growth"
+    ]
+  },
+  {
+    "symbol": "INFY",
+    "query": "Infosys hiring plans and talent acquisition scaling",
+    "expected_grounded": true,
+    "expected_recommendation": "BUY",
+    "expected_signal_types": [
+      "POSITIVE"
+    ],
+    "expected_evidence_keywords": [
+      "hiring",
+      "talent",
+      "recruitment",
+      "employees"
+    ]
+  },
+  {
+    "symbol": "AAPL",
+    "query": "Apple solid earnings growth and AI updates",
+    "expected_grounded": true,
+    "expected_recommendation": "BUY",
+    "expected_signal_types": [
+      "POSITIVE"
+    ],
+    "expected_evidence_keywords": [
+      "earnings",
+      "growth",
+      "ai",
+      "apple"
+    ]
+  },
+  {
+    "symbol": "AAPL",
+    "query": "Apple Q3 revenue beats expectations and sales increase",
+    "expected_grounded": true,
+    "expected_recommendation": "BUY",
+    "expected_signal_types": [
+      "POSITIVE"
+    ],
+    "expected_evidence_keywords": [
+      "revenue",
+      "beats",
+      "expectations",
+      "sales"
+    ]
+  },
+  {
+    "symbol": "AAPL",
+    "query": "Apple iPhone sales numbers and financial forecast",
+    "expected_grounded": true,
+    "expected_recommendation": "BUY",
+    "expected_signal_types": [
+      "POSITIVE"
+    ],
+    "expected_evidence_keywords": [
+      "iphone",
+      "sales",
+      "forecast",
+      "financial"
+    ]
+  },
+  {
+    "symbol": "AAPL",
+    "query": "Apple positive guidance for new device sales",
+    "expected_grounded": true,
+    "expected_recommendation": "BUY",
+    "expected_signal_types": [
+      "POSITIVE"
+    ],
+    "expected_evidence_keywords": [
+      "guidance",
+      "device",
+      "sales",
+      "positive"
+    ]
+  },
+  {
+    "symbol": "AAPL",
+    "query": "Apple expansion plans for retail stores globally",
+    "expected_grounded": true,
+    "expected_recommendation": "BUY",
+    "expected_signal_types": [
+      "POSITIVE"
+    ],
+    "expected_evidence_keywords": [
+      "expansion",
+      "retail",
+      "stores",
+      "global"
+    ]
+  },
+  {
+    "symbol": "AAPL",
+    "query": "Apple Vision Pro updates and ecosystem growth",
+    "expected_grounded": true,
+    "expected_recommendation": "BUY",
+    "expected_signal_types": [
+      "POSITIVE"
+    ],
+    "expected_evidence_keywords": [
+      "vision",
+      "pro",
+      "updates",
+      "ecosystem"
+    ]
+  },
+  {
+    "symbol": "AAPL",
+    "query": "Apple AI partnerships and software developments",
+    "expected_grounded": true,
+    "expected_recommendation": "BUY",
+    "expected_signal_types": [
+      "POSITIVE"
+    ],
+    "expected_evidence_keywords": [
+      "partnerships",
+      "software",
+      "ai",
+      "developments"
+    ]
+  },
+  {
+    "symbol": "INFY",
+    "query": "Strong earnings and margins growth trend for Infosys",
+    "expected_grounded": true,
+    "expected_recommendation": "BUY",
+    "expected_signal_types": [
+      "POSITIVE"
+    ],
+    "expected_evidence_keywords": [
+      "earnings",
+      "margins",
+      "growth",
+      "trend"
+    ]
+  },
+  {
+    "symbol": "AAPL",
+    "query": "Large contract wins and corporate enterprise deals for Apple",
+    "expected_grounded": true,
+    "expected_recommendation": "BUY",
+    "expected_signal_types": [
+      "POSITIVE"
+    ],
+    "expected_evidence_keywords": [
+      "contract",
+      "wins",
+      "enterprise",
+      "deals"
+    ]
+  },
+  {
+    "symbol": "INFY",
+    "query": "Infosys profit decline Q1 margins reduction",
+    "expected_grounded": true,
+    "expected_recommendation": "SELL",
+    "expected_signal_types": [
+      "NEGATIVE"
+    ],
+    "expected_evidence_keywords": [
+      "profit",
+      "decline",
+      "margins",
+      "reduction"
+    ]
+  },
+  {
+    "symbol": "INFY",
+    "query": "Infosys layoffs and massive employee headcount reductions",
+    "expected_grounded": true,
+    "expected_recommendation": "SELL",
+    "expected_signal_types": [
+      "NEGATIVE"
+    ],
+    "expected_evidence_keywords": [
+      "layoffs",
+      "employee",
+      "headcount",
+      "reductions"
+    ]
+  },
+  {
+    "symbol": "INFY",
+    "query": "Infosys weak guidance and revenue forecast drop",
+    "expected_grounded": true,
+    "expected_recommendation": "SELL",
+    "expected_signal_types": [
+      "NEGATIVE"
+    ],
+    "expected_evidence_keywords": [
+      "guidance",
+      "weak",
+      "forecast",
+      "drop"
+    ]
+  },
+  {
+    "symbol": "INFY",
+    "query": "Infosys regulatory fine and government tax disputes",
+    "expected_grounded": true,
+    "expected_recommendation": "SELL",
+    "expected_signal_types": [
+      "NEGATIVE"
+    ],
+    "expected_evidence_keywords": [
+      "regulatory",
+      "fine",
+      "tax",
+      "disputes"
+    ]
+  },
+  {
+    "symbol": "INFY",
+    "query": "Infosys shareholder lawsuits and legal regulatory concerns",
+    "expected_grounded": true,
+    "expected_recommendation": "SELL",
+    "expected_signal_types": [
+      "NEGATIVE"
+    ],
+    "expected_evidence_keywords": [
+      "lawsuits",
+      "legal",
+      "regulatory",
+      "concerns"
+    ]
+  },
+  {
+    "symbol": "INFY",
+    "query": "Infosys CFO resignation and executive leadership shakeup",
+    "expected_grounded": true,
+    "expected_recommendation": "SELL",
+    "expected_signal_types": [
+      "NEGATIVE"
+    ],
+    "expected_evidence_keywords": [
+      "resignation",
+      "executive",
+      "leadership",
+      "shakeup"
+    ]
+  },
+  {
+    "symbol": "INFY",
+    "query": "Infosys security breach and user data leaks",
+    "expected_grounded": true,
+    "expected_recommendation": "SELL",
+    "expected_signal_types": [
+      "NEGATIVE"
+    ],
+    "expected_evidence_keywords": [
+      "security",
+      "breach",
+      "data",
+      "leaks"
+    ]
+  },
+  {
+    "symbol": "AAPL",
+    "query": "Apple profit decline and consumer demand drop",
+    "expected_grounded": true,
+    "expected_recommendation": "SELL",
+    "expected_signal_types": [
+      "NEGATIVE"
+    ],
+    "expected_evidence_keywords": [
+      "profit",
+      "decline",
+      "demand",
+      "drop"
+    ]
+  },
+  {
+    "symbol": "AAPL",
+    "query": "Apple layoffs and corporate cost cutting measures",
+    "expected_grounded": true,
+    "expected_recommendation": "SELL",
+    "expected_signal_types": [
+      "NEGATIVE"
+    ],
+    "expected_evidence_keywords": [
+      "layoffs",
+      "corporate",
+      "cost",
+      "cutting"
+    ]
+  },
+  {
+    "symbol": "AAPL",
+    "query": "Apple weak guidance and drop in financial projections",
+    "expected_grounded": true,
+    "expected_recommendation": "SELL",
+    "expected_signal_types": [
+      "NEGATIVE"
+    ],
+    "expected_evidence_keywords": [
+      "guidance",
+      "weak",
+      "financial",
+      "projections"
+    ]
+  },
+  {
+    "symbol": "AAPL",
+    "query": "Apple regulator antitrust investigations and monopoly charges",
+    "expected_grounded": true,
+    "expected_recommendation": "SELL",
+    "expected_signal_types": [
+      "NEGATIVE"
+    ],
+    "expected_evidence_keywords": [
+      "antitrust",
+      "investigations",
+      "monopoly",
+      "charges"
+    ]
+  },
+  {
+    "symbol": "AAPL",
+    "query": "Apple supply chain delays causing iPhone production drop",
+    "expected_grounded": true,
+    "expected_recommendation": "SELL",
+    "expected_signal_types": [
+      "NEGATIVE"
+    ],
+    "expected_evidence_keywords": [
+      "supply",
+      "chain",
+      "delays",
+      "production"
+    ]
+  },
+  {
+    "symbol": "AAPL",
+    "query": "Apple tax disputes with European Union commissions",
+    "expected_grounded": true,
+    "expected_recommendation": "SELL",
+    "expected_signal_types": [
+      "NEGATIVE"
+    ],
+    "expected_evidence_keywords": [
+      "tax",
+      "disputes",
+      "european",
+      "union"
+    ]
+  },
+  {
+    "symbol": "AAPL",
+    "query": "Apple patent lawsuits and watch import ban rulings",
+    "expected_grounded": true,
+    "expected_recommendation": "SELL",
+    "expected_signal_types": [
+      "NEGATIVE"
+    ],
+    "expected_evidence_keywords": [
+      "patent",
+      "lawsuits",
+      "watch",
+      "ban"
+    ]
+  },
+  {
+    "symbol": "INFY",
+    "query": "Profit decline and operating margin compression in Infosys",
+    "expected_grounded": true,
+    "expected_recommendation": "SELL",
+    "expected_signal_types": [
+      "NEGATIVE"
+    ],
+    "expected_evidence_keywords": [
+      "profit",
+      "decline",
+      "margin",
+      "compression"
+    ]
+  },
+  {
+    "symbol": "INFY",
+    "query": "US-China trade war impact on IT export outsourcing sector",
+    "expected_grounded": true,
+    "expected_recommendation": "SELL",
+    "expected_signal_types": [
+      "RISK",
+      "NEGATIVE"
+    ],
+    "expected_evidence_keywords": [
+      "trade",
+      "war",
+      "tariffs",
+      "export",
+      "outsourcing"
+    ]
+  },
+  {
+    "symbol": "INFY",
+    "query": "Silicon Valley Bank collapse IT startup liquidity crisis impact",
+    "expected_grounded": true,
+    "expected_recommendation": "SELL",
+    "expected_signal_types": [
+      "RISK"
+    ],
+    "expected_evidence_keywords": [
+      "bank",
+      "collapse",
+      "crisis",
+      "liquidity"
+    ]
+  },
+  {
+    "symbol": "INFY",
+    "query": "Federal Reserve interest rate hikes impact on IT tech stocks",
+    "expected_grounded": true,
+    "expected_recommendation": "SELL",
+    "expected_signal_types": [
+      "RISK"
+    ],
+    "expected_evidence_keywords": [
+      "interest",
+      "rate",
+      "hikes",
+      "stocks"
+    ]
+  },
+  {
+    "symbol": "INFY",
+    "query": "Global supply chain issues and raw material inflation impacts",
+    "expected_grounded": true,
+    "expected_recommendation": "SELL",
+    "expected_signal_types": [
+      "RISK"
+    ],
+    "expected_evidence_keywords": [
+      "supply",
+      "chain",
+      "material",
+      "inflation"
+    ]
+  },
+  {
+    "symbol": "INFY",
+    "query": "Global inflation impact on IT outsourcing spending budgets",
+    "expected_grounded": true,
+    "expected_recommendation": "SELL",
+    "expected_signal_types": [
+      "RISK"
+    ],
+    "expected_evidence_keywords": [
+      "inflation",
+      "outsourcing",
+      "spending",
+      "budgets"
+    ]
+  },
+  {
+    "symbol": "INFY",
+    "query": "New tariff announcements impact on IT sector export businesses",
+    "expected_grounded": true,
+    "expected_recommendation": "SELL",
+    "expected_signal_types": [
+      "RISK"
+    ],
+    "expected_evidence_keywords": [
+      "tariff",
+      "announcements",
+      "export",
+      "businesses"
+    ]
+  },
+  {
+    "symbol": "INFY",
+    "query": "Outsourcing sector geopolitical risks and regulatory changes",
+    "expected_grounded": true,
+    "expected_recommendation": "SELL",
+    "expected_signal_types": [
+      "RISK"
+    ],
+    "expected_evidence_keywords": [
+      "geopolitical",
+      "risks",
+      "regulatory",
+      "changes"
+    ]
+  },
+  {
+    "symbol": "AAPL",
+    "query": "US-China trade war import tariff escalation impact on Apple",
+    "expected_grounded": true,
+    "expected_recommendation": "SELL",
+    "expected_signal_types": [
+      "RISK",
+      "NEGATIVE"
+    ],
+    "expected_evidence_keywords": [
+      "trade",
+      "war",
+      "tariff",
+      "escalation"
+    ]
+  },
+  {
+    "symbol": "AAPL",
+    "query": "Silicon Valley Bank collapse tech industry liquidity risk",
+    "expected_grounded": true,
+    "expected_recommendation": "SELL",
+    "expected_signal_types": [
+      "RISK"
+    ],
+    "expected_evidence_keywords": [
+      "bank",
+      "collapse",
+      "tech",
+      "liquidity"
+    ]
+  },
+  {
+    "symbol": "AAPL",
+    "query": "Federal Reserve interest rate hikes tech sector multiples compression",
+    "expected_grounded": true,
+    "expected_recommendation": "SELL",
+    "expected_signal_types": [
+      "RISK"
+    ],
+    "expected_evidence_keywords": [
+      "interest",
+      "rate",
+      "hikes",
+      "multiples"
+    ]
+  },
+  {
+    "symbol": "AAPL",
+    "query": "Global supply chain disruptions logistics bottleneck impact",
+    "expected_grounded": true,
+    "expected_recommendation": "SELL",
+    "expected_signal_types": [
+      "RISK"
+    ],
+    "expected_evidence_keywords": [
+      "supply",
+      "chain",
+      "disruptions",
+      "logistics"
+    ]
+  },
+  {
+    "symbol": "AAPL",
+    "query": "Global inflation consumer electronics discretionary spending reduction",
+    "expected_grounded": true,
+    "expected_recommendation": "SELL",
+    "expected_signal_types": [
+      "RISK"
+    ],
+    "expected_evidence_keywords": [
+      "inflation",
+      "consumer",
+      "electronics",
+      "spending"
+    ]
+  },
+  {
+    "symbol": "AAPL",
+    "query": "New tariff announcements impact on hardware device manufacturing costs",
+    "expected_grounded": true,
+    "expected_recommendation": "SELL",
+    "expected_signal_types": [
+      "RISK"
+    ],
+    "expected_evidence_keywords": [
+      "tariff",
+      "announcements",
+      "device",
+      "manufacturing"
+    ]
+  },
+  {
+    "symbol": "AAPL",
+    "query": "Geopolitical tensions impact on global consumer sales in Asia",
+    "expected_grounded": true,
+    "expected_recommendation": "SELL",
+    "expected_signal_types": [
+      "RISK"
+    ],
+    "expected_evidence_keywords": [
+      "geopolitical",
+      "tensions",
+      "consumer",
+      "sales"
+    ]
+  },
+  {
+    "symbol": "AAPL",
+    "query": "China supply chain lockouts and global component shortage risks",
+    "expected_grounded": true,
+    "expected_recommendation": "SELL",
+    "expected_signal_types": [
+      "RISK"
+    ],
+    "expected_evidence_keywords": [
+      "supply",
+      "chain",
+      "lockouts",
+      "shortage"
+    ]
+  },
+  {
+    "symbol": "INFY",
+    "query": "Will Infosys build a city on Mars next year?",
+    "expected_grounded": false,
+    "expected_recommendation": "INSUFFICIENT_DATA",
+    "expected_signal_types": []
+  },
+  {
+    "symbol": "AAPL",
+    "query": "How to make a chocolate chip cookie at home?",
+    "expected_grounded": false,
+    "expected_recommendation": "INSUFFICIENT_DATA",
+    "expected_signal_types": []
+  },
+  {
+    "symbol": "INFY",
+    "query": "Who is the prime minister of India currently?",
+    "expected_grounded": false,
+    "expected_recommendation": "INSUFFICIENT_DATA",
+    "expected_signal_types": []
+  },
+  {
+    "symbol": "AAPL",
+    "query": "What is the average temperature in Paris in July?",
+    "expected_grounded": false,
+    "expected_recommendation": "INSUFFICIENT_DATA",
+    "expected_signal_types": []
+  },
+  {
+    "symbol": "AAPL",
+    "query": "Will Apple launch a space exploration rocket to Jupiter?",
+    "expected_grounded": false,
+    "expected_recommendation": "INSUFFICIENT_DATA",
+    "expected_signal_types": []
+  },
+  {
+    "symbol": "INFY",
+    "query": "Tell me a joke about wall street stock brokers",
+    "expected_grounded": false,
+    "expected_recommendation": "INSUFFICIENT_DATA",
+    "expected_signal_types": []
+  },
+  {
+    "symbol": "AAPL",
+    "query": "How to write a basic python hello world script",
+    "expected_grounded": false,
+    "expected_recommendation": "INSUFFICIENT_DATA",
+    "expected_signal_types": []
+  },
+  {
+    "symbol": "INFY",
+    "query": "What is the capital city of Australia?",
+    "expected_grounded": false,
+    "expected_recommendation": "INSUFFICIENT_DATA",
+    "expected_signal_types": []
+  },
+  {
+    "symbol": "XYZ_INVALID",
+    "query": "Should I buy this stock?",
+    "expected_grounded": false,
+    "expected_recommendation": "INSUFFICIENT_DATA",
+    "expected_signal_types": []
+  },
+  {
+    "symbol": "UNKNOWN_TICKER",
+    "query": "Will this unknown stock rise in value next week?",
+    "expected_grounded": false,
+    "expected_recommendation": "INSUFFICIENT_DATA",
+    "expected_signal_types": []
+  },
+  {
+    "symbol": "GOOGL",
+    "query": "Should I buy Google stock after latest updates?",
+    "expected_grounded": false,
+    "expected_recommendation": "INSUFFICIENT_DATA",
+    "expected_signal_types": []
+  },
+  {
+    "symbol": "MSFT",
+    "query": "Recent contract wins for Microsoft cloud services",
+    "expected_grounded": false,
+    "expected_recommendation": "INSUFFICIENT_DATA",
+    "expected_signal_types": []
+  },
+  {
+    "symbol": "",
+    "query": "Empty symbol request test scenario",
+    "expected_grounded": false,
+    "expected_recommendation": "INSUFFICIENT_DATA",
+    "expected_signal_types": []
+  },
+  {
+    "symbol": "INFY",
+    "query": "",
+    "expected_grounded": false,
+    "expected_recommendation": "INSUFFICIENT_DATA",
+    "expected_signal_types": []
+  },
+  {
+    "symbol": "AAPL",
+    "query": "   ",
+    "expected_grounded": false,
+    "expected_recommendation": "INSUFFICIENT_DATA",
+    "expected_signal_types": []
+  },
+  {
+    "symbol": "RELIANCE",
+    "query": "Reliance Q3 earnings beat and retail sector expansion updates",
+    "expected_grounded": true,
+    "expected_recommendation": "BUY",
+    "expected_signal_types": [
+      "POSITIVE"
+    ],
+    "expected_evidence_keywords": [
+      "earnings",
+      "retail",
+      "expansion",
+      "reliance"
+    ]
+  },
+  {
+    "symbol": "RELIANCE",
+    "query": "Reliance Jio subscriber growth and 5G network rollout success",
+    "expected_grounded": true,
+    "expected_recommendation": "BUY",
+    "expected_signal_types": [
+      "POSITIVE"
+    ],
+    "expected_evidence_keywords": [
+      "jio",
+      "subscriber",
+      "5g",
+      "growth"
+    ]
+  },
+  {
+    "symbol": "RELIANCE",
+    "query": "Reliance green energy gigafactory commissioning updates",
+    "expected_grounded": true,
+    "expected_recommendation": "BUY",
+    "expected_signal_types": [
+      "POSITIVE"
+    ],
+    "expected_evidence_keywords": [
+      "green",
+      "energy",
+      "gigafactory",
+      "commissioning"
+    ]
+  },
+  {
+    "symbol": "MSFT",
+    "query": "Microsoft Cloud Azure revenue beats expectations",
+    "expected_grounded": true,
+    "expected_recommendation": "BUY",
+    "expected_signal_types": [
+      "POSITIVE"
+    ],
+    "expected_evidence_keywords": [
+      "azure",
+      "cloud",
+      "revenue",
+      "microsoft"
+    ]
+  },
+  {
+    "symbol": "MSFT",
+    "query": "Microsoft Copilot AI integration boosts enterprise license sales",
+    "expected_grounded": true,
+    "expected_recommendation": "BUY",
+    "expected_signal_types": [
+      "POSITIVE"
+    ],
+    "expected_evidence_keywords": [
+      "copilot",
+      "ai",
+      "enterprise",
+      "license"
+    ]
+  },
+  {
+    "symbol": "MSFT",
+    "query": "Microsoft Azure cloud outage impacts global enterprise operations",
+    "expected_grounded": true,
+    "expected_recommendation": "SELL",
+    "expected_signal_types": [
+      "NEGATIVE"
+    ],
+    "expected_evidence_keywords": [
+      "azure",
+      "outage",
+      "outages",
+      "operations"
+    ]
+  },
+  {
+    "symbol": "MSFT",
+    "query": "Microsoft antitrust investigation by European Commission on Teams bundle",
+    "expected_grounded": true,
+    "expected_recommendation": "SELL",
+    "expected_signal_types": [
+      "NEGATIVE"
+    ],
+    "expected_evidence_keywords": [
+      "antitrust",
+      "teams",
+      "bundle",
+      "european"
+    ]
+  },
+  {
+    "symbol": "RELIANCE",
+    "query": "Reliance oil refining margins decline due to global crude price drop",
+    "expected_grounded": true,
+    "expected_recommendation": "SELL",
+    "expected_signal_types": [
+      "NEGATIVE"
+    ],
+    "expected_evidence_keywords": [
+      "oil",
+      "refining",
+      "margins",
+      "decline"
+    ]
+  },
+  {
+    "symbol": "RELIANCE",
+    "query": "Reliance retail growth slows down during Q2 economic slowdown",
+    "expected_grounded": true,
+    "expected_recommendation": "SELL",
+    "expected_signal_types": [
+      "NEGATIVE"
+    ],
+    "expected_evidence_keywords": [
+      "retail",
+      "slows",
+      "economic",
+      "slowdown"
+    ]
+  },
+  {
+    "symbol": "RELIANCE",
+    "query": "Geopolitical conflict in Middle East threatens Reliance crude oil imports",
+    "expected_grounded": true,
+    "expected_recommendation": "SELL",
+    "expected_signal_types": [
+      "RISK"
+    ],
+    "expected_evidence_keywords": [
+      "middle",
+      "east",
+      "crude",
+      "imports"
+    ]
+  },
+  {
+    "symbol": "MSFT",
+    "query": "New software tariffs impact Microsoft international enterprise licensing costs",
+    "expected_grounded": true,
+    "expected_recommendation": "SELL",
+    "expected_signal_types": [
+      "RISK"
+    ],
+    "expected_evidence_keywords": [
+      "tariffs",
+      "licensing",
+      "costs",
+      "software"
+    ]
+  },
+  {
+    "symbol": "RELIANCE",
+    "query": "How many moons does Saturn have?",
+    "expected_grounded": false,
+    "expected_recommendation": "INSUFFICIENT_DATA",
+    "expected_signal_types": []
+  },
+  {
+    "symbol": "MSFT",
+    "query": "What is the recipe for baking a sourdough bread?",
+    "expected_grounded": false,
+    "expected_recommendation": "INSUFFICIENT_DATA",
+    "expected_signal_types": []
+  },
+  {
+    "symbol": "RELIANCE",
+    "query": "Will Reliance launch a rocket to land on the Sun?",
+    "expected_grounded": false,
+    "expected_recommendation": "INSUFFICIENT_DATA",
+    "expected_signal_types": []
+  },
+  {
+    "symbol": "MSFT",
+    "query": "Who won the FIFA World Cup in 1998?",
+    "expected_grounded": false,
+    "expected_recommendation": "INSUFFICIENT_DATA",
+    "expected_signal_types": []
+  },
+  {
+    "symbol": "INFY",
+    "query": "How do you tie a windsor knot tie step by step?",
+    "expected_grounded": false,
+    "expected_recommendation": "INSUFFICIENT_DATA",
+    "expected_signal_types": []
+  },
+  {
+    "symbol": "AAPL",
+    "query": "What is the capital city of France?",
+    "expected_grounded": false,
+    "expected_recommendation": "INSUFFICIENT_DATA",
+    "expected_signal_types": []
+  },
+  {
+    "symbol": "INFY",
+    "query": "Write a short poem about coding in python",
+    "expected_grounded": false,
+    "expected_recommendation": "INSUFFICIENT_DATA",
+    "expected_signal_types": []
+  },
+  {
+    "symbol": "AAPL",
+    "query": "How to repair a flat tire on a bicycle",
+    "expected_grounded": false,
+    "expected_recommendation": "INSUFFICIENT_DATA",
+    "expected_signal_types": []
+  },
+  {
+    "symbol": "INFY",
+    "query": "How did the stock react during similar Federal Reserve interest rate hikes in 2022?",
+    "expected_grounded": true,
+    "expected_recommendation": "SELL",
+    "expected_signal_types": [
+      "RISK"
+    ],
+    "expected_evidence_keywords": [
+      "interest",
+      "rate",
+      "hikes",
+      "fed"
+    ]
+  },
+  {
+    "symbol": "INFY",
+    "query": "What was the IT sector reaction during the 2018 US-China Trade War?",
+    "expected_grounded": true,
+    "expected_recommendation": "SELL",
+    "expected_signal_types": [
+      "RISK",
+      "NEGATIVE"
+    ],
+    "expected_evidence_keywords": [
+      "trade",
+      "war",
+      "tariff",
+      "it"
+    ]
+  },
+  {
+    "symbol": "INFY",
+    "query": "How did startup liquidity and tech stocks react after the Silicon Valley Bank collapse?",
+    "expected_grounded": true,
+    "expected_recommendation": "SELL",
+    "expected_signal_types": [
+      "RISK"
+    ],
+    "expected_evidence_keywords": [
+      "bank",
+      "collapse",
+      "liquidity",
+      "svb"
+    ]
+  },
+  {
+    "symbol": "AAPL",
+    "query": "Compare current trade tariff concerns with the 2018 trade war events.",
+    "expected_grounded": true,
+    "expected_recommendation": "SELL",
+    "expected_signal_types": [
+      "RISK",
+      "NEGATIVE"
+    ],
+    "expected_evidence_keywords": [
+      "trade",
+      "war",
+      "tariff",
+      "tariffs"
+    ]
+  },
+  {
+    "symbol": "AAPL",
+    "query": "Has there been a past event similar to global supply chain lockouts?",
+    "expected_grounded": true,
+    "expected_recommendation": "SELL",
+    "expected_signal_types": [
+      "RISK"
+    ],
+    "expected_evidence_keywords": [
+      "supply",
+      "chain",
+      "shortage",
+      "shortages"
+    ]
+  },
+  {
+    "symbol": "AAPL",
+    "query": "How did Apple stock price perform during the COVID-19 pandemic economic crash?",
+    "expected_grounded": true,
+    "expected_recommendation": "BUY",
+    "expected_signal_types": [
+      "POSITIVE"
+    ],
+    "expected_evidence_keywords": [
+      "covid",
+      "crash",
+      "pandemic",
+      "lockdowns"
+    ]
+  },
+  {
+    "symbol": "INFY",
+    "query": "Is there a historical analogy for start-up banking crisis events?",
+    "expected_grounded": true,
+    "expected_recommendation": "SELL",
+    "expected_signal_types": [
+      "RISK"
+    ],
+    "expected_evidence_keywords": [
+      "bank",
+      "collapse",
+      "crisis",
+      "svb"
+    ]
+  },
+  {
+    "symbol": "INFY",
+    "query": "What happened to Infosys stock during the geopolitical conflict in Ukraine?",
+    "expected_grounded": true,
+    "expected_recommendation": "SELL",
+    "expected_signal_types": [
+      "RISK"
+    ],
+    "expected_evidence_keywords": [
+      "russia",
+      "ukraine",
+      "war",
+      "invasion"
+    ]
+  },
+  {
+    "symbol": "AAPL",
+    "query": "How did interest rate hikes impact growth stock valuations historically?",
+    "expected_grounded": true,
+    "expected_recommendation": "SELL",
+    "expected_signal_types": [
+      "RISK"
+    ],
+    "expected_evidence_keywords": [
+      "rate",
+      "hikes",
+      "interest",
+      "fed"
+    ]
+  },
+  {
+    "symbol": "AAPL",
+    "query": "Are there historical outcomes showing how global logistics bottlenecks resolved?",
+    "expected_grounded": true,
+    "expected_recommendation": "SELL",
+    "expected_signal_types": [
+      "RISK"
+    ],
+    "expected_evidence_keywords": [
+      "supply",
+      "chain",
+      "disruptions",
+      "logistics"
+    ]
+  },
+  {
+    "symbol": "INFY",
+    "query": "What is the current PE ratio of Infosys?",
+    "expected_grounded": false,
+    "expected_recommendation": "INSUFFICIENT_DATA",
+    "expected_signal_types": []
+  },
+  {
+    "symbol": "AAPL",
+    "query": "Show me the price to earnings ratio for Apple",
+    "expected_grounded": false,
+    "expected_recommendation": "INSUFFICIENT_DATA",
+    "expected_signal_types": []
+  },
+  {
+    "symbol": "INFY",
+    "query": "What is the shareholding pattern of Infosys promoters?",
+    "expected_grounded": false,
+    "expected_recommendation": "INSUFFICIENT_DATA",
+    "expected_signal_types": []
+  },
+  {
+    "symbol": "AAPL",
+    "query": "What is the total market cap of Apple Inc?",
+    "expected_grounded": false,
+    "expected_recommendation": "INSUFFICIENT_DATA",
+    "expected_signal_types": []
+  },
+  {
+    "symbol": "INFY",
+    "query": "Show the balance sheet and income statement of Infosys",
+    "expected_grounded": false,
+    "expected_recommendation": "INSUFFICIENT_DATA",
+    "expected_signal_types": []
+  },
+  {
+    "symbol": "AAPL",
+    "query": "What is the debt to equity ratio of Apple?",
+    "expected_grounded": false,
+    "expected_recommendation": "INSUFFICIENT_DATA",
+    "expected_signal_types": []
+  },
+  {
+    "symbol": "INFY",
+    "query": "Retrieve recent dividends paid by Infosys to shareholders",
+    "expected_grounded": false,
+    "expected_recommendation": "INSUFFICIENT_DATA",
+    "expected_signal_types": []
+  },
+  {
+    "symbol": "AAPL",
+    "query": "Show the cash flow statement from the latest financial statements",
+    "expected_grounded": false,
+    "expected_recommendation": "INSUFFICIENT_DATA",
+    "expected_signal_types": []
+  },
+  {
+    "symbol": "INFY",
+    "query": "What is the EPS (earnings per share) of Infosys?",
+    "expected_grounded": false,
+    "expected_recommendation": "INSUFFICIENT_DATA",
+    "expected_signal_types": []
+  },
+  {
+    "symbol": "AAPL",
+    "query": "What is the book value of Apple stock?",
+    "expected_grounded": false,
+    "expected_recommendation": "INSUFFICIENT_DATA",
+    "expected_signal_types": []
+  },
+  {
+    "symbol": "INFY",
+    "query": "What is the ROCE and ROE of Infosys?",
+    "expected_grounded": false,
+    "expected_recommendation": "INSUFFICIENT_DATA",
+    "expected_signal_types": []
+  },
+  {
+    "symbol": "AAPL",
+    "query": "Show the latest financial statements of Apple Inc",
+    "expected_grounded": false,
+    "expected_recommendation": "INSUFFICIENT_DATA",
+    "expected_signal_types": []
+  },
+  {
+    "symbol": "INFY",
+    "query": "Does Infosys pay stable quarterly dividends?",
+    "expected_grounded": false,
+    "expected_recommendation": "INSUFFICIENT_DATA",
+    "expected_signal_types": []
+  }
+]

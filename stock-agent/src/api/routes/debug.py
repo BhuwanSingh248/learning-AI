@@ -10,7 +10,8 @@ from src.api.schemas.debug import (
     DebugRerankResponse,
     RerankedChunkResponse,
     DebugGroundingRequest,
-    DebugGroundingResponse
+    DebugGroundingResponse,
+    DebugAnalyzeResponse
 )
 
 router = APIRouter(
@@ -134,12 +135,12 @@ async def debug_grounding(request: DebugGroundingRequest, db: AsyncSession = Dep
 
 from src.api.schemas import AnalyzeRequest, AnalyzeResponse
 
-@router.post("/analyze", response_model=AnalyzeResponse)
+@router.post("/analyze", response_model=DebugAnalyzeResponse)
 async def debug_analyze(request: AnalyzeRequest, db: AsyncSession = Depends(get_db)):
     """
     Runs custom query driven stock analysis pipeline and returns full execution metrics.
     """
-    from src.api.routes import rag_retriever, llm_client
+    from src.api.routes import rag_retriever, reasoning_engine
     from src.metrics import MetricsCollector
     from src.llm.prompt_builder import PromptBuilder
     
@@ -156,49 +157,38 @@ async def debug_analyze(request: AnalyzeRequest, db: AsyncSession = Depends(get_
         
         grounding_decision = citation_context.grounding
         is_grounded = grounding_decision.is_grounded if grounding_decision else False
-        confidence_score = grounding_decision.confidence_score if grounding_decision else 0.0
+        refusal_reason = grounding_decision.reason if grounding_decision else "Grounding failed."
+        available_citation_ids = [c.citation_id for c in citation_context.citations]
         
         # Ensure grounded status is set on the metrics object
         metrics.set_grounded(is_grounded)
         
-        diagnostics = {
-            "query": request.query,
-            "symbol": request.symbol,
-            "top_k": request.top_k,
-            "grounding_reason": grounding_decision.reason if grounding_decision else "No grounding decision"
-        }
-        
-        if not is_grounded:
-            refusal_reason = grounding_decision.reason if grounding_decision else "Grounding failed."
-            metrics.end_stage("total")
-            symbol_metrics = metrics.get_metrics()
-            return AnalyzeResponse(
-                answer=f"Insufficient evidence available to answer this question reliably. Details: {refusal_reason}",
-                grounded=False,
-                confidence_score=confidence_score,
-                citations=[],
-                diagnostics=diagnostics,
-                metrics=symbol_metrics
-            )
+        # Build prompt for debug visualization
+        if is_grounded:
+            payload = PromptBuilder.build_recommendation_prompt(request.query, request.symbol, citation_context.formatted_text)
+            combined_prompt = f"System Prompt:\n{payload.system_prompt}\n\nUser Prompt:\n{payload.user_prompt}"
+        else:
+            combined_prompt = "Not constructed (grounding failed)"
             
-        metrics.start_stage("prompt_build")
-        prompt = PromptBuilder.build_custom_query_prompt(request.query, citation_context.formatted_text)
-        metrics.end_stage("prompt_build")
-        
-        metrics.start_stage("llm")
-        metrics.set_model_name(llm_client.model_name)
-        answer = llm_client.generate_response(prompt)
-        metrics.end_stage("llm")
+        # Delegate execution, validation, parsing to ReasoningEngine
+        llm_decision = reasoning_engine.make_decision(
+            symbol=request.symbol,
+            query=request.query,
+            context_text=citation_context.formatted_text,
+            is_grounded=is_grounded,
+            available_citation_ids=available_citation_ids,
+            metrics=metrics,
+            refusal_reason=refusal_reason,
+            grounding_confidence_score=grounding_decision.confidence_score if grounding_decision else 0.0
+        )
         
         metrics.end_stage("total")
         symbol_metrics = metrics.get_metrics()
+        symbol_metrics.grounded = is_grounded
         
-        return AnalyzeResponse(
-            answer=answer,
-            grounded=True,
-            confidence_score=confidence_score,
-            citations=citation_context.citations,
-            diagnostics=diagnostics,
+        return DebugAnalyzeResponse(
+            prompt=combined_prompt,
+            recommendation=llm_decision,
             metrics=symbol_metrics
         )
     except Exception as e:

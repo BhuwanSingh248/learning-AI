@@ -9,8 +9,8 @@ from src.rag.bm25_retriever import BM25Retriever
 from src.rag.reranker import Reranker
 from src.rag.grounding import GroundingService
 from src.rag.models import RagNewsMetadata
-from src.data.services.data_service import DataService
-from src.llm.reasoning import ReasoningEngine, LLMDecision
+from src.reasoning.reasoning_engine import ReasoningEngine
+from src.reasoning.models import RecommendationResponse, RecommendationType
 from src.agent.stock_agent import StockAgent
 from src.data.models.price import PriceBar
 from src.data.models.news import NewsItem
@@ -83,10 +83,11 @@ class TestRAGEndToEnd:
         mock_data_service.get_corporate_actions.return_value = []
 
         mock_reasoning_engine = MagicMock()
-        mock_reasoning_engine.make_decision.return_value = LLMDecision(
-            symbol="AAPL",
-            decision="Bullish",
-            reason="Market indicators are positive and news matches momentum."
+        mock_reasoning_engine.make_decision.return_value = RecommendationResponse(
+            recommendation=RecommendationType.BUY,
+            confidence=0.8,
+            reasoning="Market indicators are positive and news matches momentum.",
+            citations=[]
         )
 
         agent = StockAgent(
@@ -113,6 +114,14 @@ class TestRAGEndToEnd:
         mock_execute_result.scalars.return_value.all.return_value = []
         mock_session.execute.return_value = mock_execute_result
 
+        # Setup mock_reasoning_engine behavior for ungrounded
+        mock_reasoning_engine.make_decision.return_value = RecommendationResponse(
+            recommendation=RecommendationType.INSUFFICIENT_DATA,
+            confidence=0.0,
+            reasoning="Grounding failed. Insufficient evidence available to answer this question reliably. Details: required >= 1 chunks, got 0",
+            citations=[]
+        )
+
         # 2. Run analysis
         result = await agent.analyze_stocks(["EMPTYTICKER"], lookback_days=90)
         
@@ -121,13 +130,15 @@ class TestRAGEndToEnd:
         suggestion = result["suggestions"][0]
         
         assert suggestion["symbol"] == "EMPTYTICKER"
-        assert suggestion["decision"] == "Neutral"
+        assert suggestion["decision"] == "INSUFFICIENT_DATA"
         # Verify that the reason text explains the grounding failure
         assert "Insufficient evidence available to answer this question reliably." in suggestion["reason"]
         assert "required >= 1" in suggestion["reason"]
         
-        # Verify LLM was bypassed (make_decision should not be called)
-        mock_reasoning_engine.make_decision.assert_not_called()
+        # Verify ReasoningEngine.make_decision was called, passing is_grounded=False
+        mock_reasoning_engine.make_decision.assert_called_once()
+        args, kwargs = mock_reasoning_engine.make_decision.call_args
+        assert kwargs["is_grounded"] is False
 
     @pytest.mark.asyncio
     @patch("src.agent.stock_agent.AsyncSessionLocal")
@@ -159,7 +170,7 @@ class TestRAGEndToEnd:
         suggestion = result["suggestions"][0]
 
         assert suggestion["symbol"] == "AAPL"
-        assert suggestion["decision"] == "Bullish"
+        assert suggestion["decision"] == "BUY"
         assert suggestion["reason"] == "Market indicators are positive and news matches momentum."
         
         # Verify LLM was invoked

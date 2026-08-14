@@ -133,8 +133,10 @@ def test_analyze_endpoint():
     client = TestClient(app)
     
     with patch("src.api.routes.rag_retriever.retrieve") as mock_retrieve, \
-         patch("src.api.routes.llm_client.generate_response") as mock_generate:
+         patch("src.api.routes.llm_client.generate_response") as mock_generate, \
+         patch("src.api.routes.event_retriever.retrieve") as mock_event_retrieve:
         
+        mock_event_retrieve.return_value = []
         mock_decision = GroundingDecision(is_grounded=True, reason="Evidence passed", confidence_score=-2.5)
         mock_retrieve.return_value = CitationContext(
             formatted_text="[1] Source: Reuters | Context: Info",
@@ -143,7 +145,7 @@ def test_analyze_endpoint():
             ],
             grounding=mock_decision
         )
-        mock_generate.return_value = "Yes, Infosys is a buy."
+        mock_generate.return_value = '{"signals": [{"signal_type": "POSITIVE", "title": "Growth", "description": "Rev up", "citation_ids": [1]}, {"signal_type": "POSITIVE", "title": "Contracts", "description": "New deal", "citation_ids": [1]}], "reasoning": "Yes, Infosys is a buy."}'
         
         response = client.post(
             "/analyze",
@@ -152,11 +154,16 @@ def test_analyze_endpoint():
         
         assert response.status_code == 200
         data = response.json()
-        assert data["answer"] == "Yes, Infosys is a buy."
+        assert data["recommendation"] == "BUY"
+        # base_conf (2 signals) = 0.7. grounding_score = -2.5 -> normalized = 0.375
+        # confidence = 0.8 * 0.7 + 0.2 * 0.375 = 0.635
+        assert abs(data["confidence"] - 0.635) < 0.01
+        assert data["reasoning"] == "Yes, Infosys is a buy."
         assert data["grounded"] is True
-        assert data["confidence_score"] == -2.5
         assert len(data["citations"]) == 1
         assert data["citations"][0]["chunk_id"] == "c1"
+        assert len(data["signals"]) == 2
+        assert data["signals"][0]["title"] == "Growth"
 
 def test_refusal_path():
     """
@@ -179,10 +186,11 @@ def test_refusal_path():
         
         assert response.status_code == 200
         data = response.json()
-        assert "Insufficient evidence" in data["answer"]
-        assert "Top reranker score below threshold" in data["answer"]
+        assert data["recommendation"] == "INSUFFICIENT_DATA"
+        assert "Insufficient evidence" in data["reasoning"]
+        assert "Top reranker score below threshold" in data["reasoning"]
         assert data["grounded"] is False
-        assert data["confidence_score"] == -8.5
+        assert data["confidence"] == 0.0
         assert len(data["citations"]) == 0
 
 
@@ -214,8 +222,10 @@ def test_api_metrics_returned():
     client = TestClient(app)
     
     with patch("src.api.routes.rag_retriever.retrieve") as mock_retrieve, \
-         patch("src.api.routes.llm_client.generate_response") as mock_generate:
+         patch("src.api.routes.llm_client.generate_response") as mock_generate, \
+         patch("src.api.routes.event_retriever.retrieve") as mock_event_retrieve:
         
+        mock_event_retrieve.return_value = []
         mock_decision = GroundingDecision(is_grounded=True, reason="Passed", confidence_score=-1.0)
         mock_retrieve.return_value = CitationContext(
             formatted_text="[1] Context",
@@ -224,7 +234,7 @@ def test_api_metrics_returned():
             ],
             grounding=mock_decision
         )
-        mock_generate.return_value = "Answer"
+        mock_generate.return_value = '{"signals": [{"signal_type": "POSITIVE", "title": "Strong Earnings", "description": "Passed", "citation_ids": [1]}, {"signal_type": "POSITIVE", "title": "Positive Guidance", "description": "Passed", "citation_ids": [1]}], "reasoning": "Passed"}'
         
         # Test /analyze public endpoint
         response = client.post(
