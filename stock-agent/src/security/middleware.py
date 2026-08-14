@@ -41,11 +41,12 @@ class SecurityMiddleware(BaseHTTPMiddleware):
         method = request.method
         
         # Redact headers for secure audit logging
-        redacted_headers = dict(request.headers)
-        if "x-api-key" in redacted_headers:
-            redacted_headers["x-api-key"] = "[REDACTED]"
-        if "authorization" in redacted_headers:
-            redacted_headers["authorization"] = "[REDACTED]"
+        redacted_headers = {}
+        for k, v in request.headers.items():
+            if k.lower() in ("x-api-key", "authorization"):
+                redacted_headers[k] = "[REDACTED]"
+            else:
+                redacted_headers[k] = v
             
         logger.info(
             "Audit | Request Start: %s %s | ClientIP=%s | Headers=%s",

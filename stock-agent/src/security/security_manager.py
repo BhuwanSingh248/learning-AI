@@ -102,9 +102,16 @@ class SecurityManager:
 
     def identify_client(self, api_key: Optional[str], client_ip: str) -> str:
         """
-        Derives a client identifier.
+        Derives a client identifier without exposing sensitive API key bytes.
+        Maps valid keys to indexed aliases (e.g. client_1) to break CodeQL taint flow.
         """
         if api_key and self.validate_key(api_key):
-            # Mask key for identifier or map it
-            return f"key:{api_key[:6]}..."
+            try:
+                valid_keys = [
+                    key.strip() for key in settings.API_KEYS.split(",") if key.strip()
+                ]
+                idx = valid_keys.index(api_key)
+                return f"client_{idx + 1}"
+            except ValueError:
+                return "client_unknown"
         return f"ip:{client_ip}"
