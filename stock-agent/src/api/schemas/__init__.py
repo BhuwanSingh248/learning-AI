@@ -146,3 +146,13 @@ class AnalyzeResponse(BaseModel):
     metrics: Optional[PipelineMetrics] = None
 
 
+class IngestRequest(BaseModel):
+    symbols: List[str] = Field(..., description="List of stock symbols to fetch and index news for.")
+
+
+class IngestResponse(BaseModel):
+    status: str
+    chunks_indexed: int
+
+
+

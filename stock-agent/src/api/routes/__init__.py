@@ -18,7 +18,9 @@ from src.api.schemas import (
     HealthResponse,
     HealthCheckItem,
     AnalyzeRequest,
-    AnalyzeResponse
+    AnalyzeResponse,
+    IngestRequest,
+    IngestResponse
 )
 from src.config.settings import settings
 from src.llm.prompt_builder import PromptBuilder
@@ -130,6 +132,30 @@ async def suggest_stocks(request: SuggestRequest) -> Any:
     except Exception as e:
         logger.error("API | Fatal internal server error during /suggest: %s", e)
         raise HTTPException(status_code=500, detail="An internal server error occurred while processing the request.")
+
+
+@router.post("/ingest", response_model=IngestResponse)
+async def ingest_news(request: IngestRequest, db: AsyncSession = Depends(get_db)) -> Any:
+    """
+    Decoupled news ingestion endpoint. Fetches, chunks, embeds, and indexes news 
+    for the provided symbols.
+    """
+    logger.info("API | Received /ingest request for symbols: %s", request.symbols)
+    total_indexed = 0
+    try:
+        for symbol in request.symbols:
+            raw_news = data_service.get_news(symbol)
+            if raw_news:
+                indexed = await news_indexer.index_news(symbol, raw_news, db)
+                total_indexed += indexed
+                
+        return IngestResponse(
+            status="success",
+            chunks_indexed=total_indexed
+        )
+    except Exception as e:
+        logger.error("API | Fatal error during /ingest: %s", e)
+        raise HTTPException(status_code=500, detail=f"Ingestion failed: {e}")
 
 
 @router.post("/analyze", response_model=AnalyzeResponse)

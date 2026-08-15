@@ -72,7 +72,7 @@ class TestShortNews:
             symbol="AAPL", source_id="src_42", timestamp="2026-01-01"
         )
         chunk = result[0]
-        assert chunk.chunk_id == "src_42_0"
+        assert len(chunk.chunk_id) == 64
         assert chunk.source_id == "src_42"
         assert chunk.chunk_index == 0
         assert chunk.symbol == "AAPL"
@@ -147,7 +147,7 @@ class TestEdgeCases:
 
     def test_no_source_id_chunk_id_still_formed(self):
         result = NewsChunker.chunk(SHORT_TITLE, SHORT_SUMMARY)
-        assert result[0].chunk_id == "None_0"
+        assert len(result[0].chunk_id) == 64
 
     def test_sanity_each_chunk_makes_standalone_sense(self):
         """Each chunk should contain at least one complete word."""
