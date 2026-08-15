@@ -18,15 +18,32 @@ class NewsChunker:
         symbol: str = None,
         source_id: str = None,
         timestamp: str = None,
-        article_id: str = None
+        document_id: str = None,
+        content_hash: str = None,
+        chunking_version: str = "v1"
     ) -> List[NewsChunk]:
         if not title and not summary:
             return []
         
-        combined_text = NewsChunker._combine_text(title,summary)
+        import hashlib
+        
+        # 1. Compute stable document_id if not provided
+        if not document_id:
+            input_str = f"{symbol}_{source_id}_{timestamp}_{title}"
+            document_id = hashlib.sha256(input_str.encode("utf-8")).hexdigest()
+            
+        # 2. Compute stable content_hash if not provided
+        if not content_hash:
+            content_str = f"{title}_{summary}"
+            content_hash = hashlib.sha256(content_str.encode("utf-8")).hexdigest()
+        
+        combined_text = NewsChunker._combine_text(title or "", summary or "")
         sentences = NewsChunker._split_sentence(combined_text)
         raw_chunks = NewsChunker._build_chunk(sentences)
-        chunks = NewsChunker._attach_metadata(raw_chunks,symbol,source_id,timestamp,article_id)
+        chunks = NewsChunker._attach_metadata(
+            raw_chunks, symbol, source_id, timestamp, 
+            document_id, content_hash, chunking_version
+        )
         return chunks        
     
     @staticmethod
@@ -74,17 +91,32 @@ class NewsChunker:
 
     
     @staticmethod
-    def _attach_metadata(raw_chunk:List[str],symbol:str,source_id:str,timestamp:str,article_id:str=None)->List[NewsChunk]:
-        chunks=[]
+    def _attach_metadata(
+        raw_chunk: List[str],
+        symbol: str,
+        source_id: str,
+        timestamp: str,
+        document_id: str,
+        content_hash: str,
+        chunking_version: str = "v1"
+    ) -> List[NewsChunk]:
+        import hashlib
+        chunks = []
         for index, chunk in enumerate(raw_chunk):
-            prefix = f"{source_id}_{article_id}" if article_id else source_id
+            # stable chunk_id is a hash of (document_id + chunk_index + chunking_version)
+            chunk_input = f"{document_id}_{index}_{chunking_version}"
+            chunk_id = hashlib.sha256(chunk_input.encode("utf-8")).hexdigest()
+            
             chunks.append(NewsChunk(
-                chunk_id=f"{prefix}_{index}",
+                chunk_id=chunk_id,
                 source_id=source_id,
                 chunk_index=index,
                 symbol=symbol,
                 timestamp=timestamp,
-                text=chunk
+                text=chunk,
+                document_id=document_id,
+                content_hash=content_hash,
+                chunking_version=chunking_version
             ))
         return chunks
     

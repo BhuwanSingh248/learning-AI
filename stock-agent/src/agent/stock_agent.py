@@ -95,10 +95,7 @@ class StockAgent:
                      logger.warning("StockAgent | Cleaned price data was empty for %s. Skipping.", symbol)
                      continue
                 
-                # 2.a. Index news into FAISS (Must happen before RAG retrieval)
-                if self.news_indexer and raw_news:
-                    async with AsyncSessionLocal() as session:
-                        await self.news_indexer.index_news(symbol, raw_news, session)
+                # 2.a. Index news into FAISS (Removed from hot path to separate ingestion and retrieval)
 
                 # 3. Generate Signals
                 signals = MarketAnalyzer.generate_signals(

@@ -57,32 +57,53 @@ class NewsIndexer:
             try:
                 import hashlib
                 from sqlalchemy.future import select
+                from sqlalchemy import delete
                 from src.rag.models import RagNewsMetadata
                 from unittest.mock import MagicMock, AsyncMock
+                from datetime import datetime
 
-                article_id = hashlib.md5(f"{article.title}_{article.source}".encode('utf-8')).hexdigest()[:12]
-                
-                # Check duplicate before indexing (if it's not a mock database session)
-                is_mock = isinstance(db_session, (MagicMock, AsyncMock)) or hasattr(db_session, "assert_called")
+                # 1. Compute stable document_id and content_hash
+                pub_ts = article.timestamp.isoformat() if isinstance(article.timestamp, datetime) else str(article.timestamp)
+                input_str = f"{symbol}_{article.source}_{pub_ts}_{article.title}"
+                document_id = hashlib.sha256(input_str.encode("utf-8")).hexdigest()
+                content_hash = hashlib.sha256(f"{article.title}_{article.summary}".encode("utf-8")).hexdigest()
+                chunking_version = "v1"
+
+                # 2. Check duplicate/change before indexing (if it's not a mock database session)
+                is_mock = (isinstance(db_session, (MagicMock, AsyncMock)) or hasattr(db_session, "assert_called")) and not (getattr(db_session, "is_test_db", None) is True)
                 if not is_mock:
-                    first_chunk_id = f"{article.source}_{article_id}_0"
-                    stmt = select(RagNewsMetadata).where(RagNewsMetadata.chunk_id == first_chunk_id)
+                    stmt = select(RagNewsMetadata).where(RagNewsMetadata.document_id == document_id)
                     res = await db_session.execute(stmt)
-                    if res is not None:
-                        existing = res.scalars().first()
-                        if existing:
-                            logger.info("NewsIndexer | Article '%s' already indexed. Skipping.", article.title)
+                    existing_records = res.scalars().all()
+                    
+                    if existing_records:
+                        if existing_records[0].content_hash == content_hash:
+                            logger.info("NewsIndexer | Article '%s' already indexed and content unchanged. Skipping.", article.title)
                             continue
+                        else:
+                            logger.info("NewsIndexer | Article '%s' content changed. Replacing chunks.", article.title)
+                            # Remove old vectors from FAISS
+                            old_ids = [r.id for r in existing_records]
+                            self.faiss_store.delete_vectors(old_ids)
+                            
+                            # Delete old database rows
+                            del_stmt = delete(RagNewsMetadata).where(RagNewsMetadata.document_id == document_id)
+                            await db_session.execute(del_stmt)
+                            await db_session.commit()
 
+                # 3. Generate Chunks
                 chunks = NewsChunker.chunk(
                     article.title,
                     article.summary,
                     symbol=symbol,
                     source_id=article.source,
                     timestamp=str(article.timestamp),
-                    article_id=article_id
+                    document_id=document_id,
+                    content_hash=content_hash,
+                    chunking_version=chunking_version
                 )
 
+                # 4. Embed and Index Chunks
                 for chunk in chunks:
                     vector = self.embedder.embed_text(chunk.text)
                     await self.faiss_store.add_vector(
@@ -93,6 +114,9 @@ class NewsIndexer:
                         chunk_text=chunk.text,
                         timestamp=article.timestamp,   # pass datetime object, not str
                         vector=vector,
+                        document_id=chunk.document_id,
+                        content_hash=chunk.content_hash,
+                        chunking_version=chunk.chunking_version,
                         db_session=db_session
                     )
                     total += 1

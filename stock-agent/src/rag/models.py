@@ -23,19 +23,28 @@ class RagNewsMetadata(Base):
     id = Column(Integer, primary_key=True, index=True)
     symbol = Column(String, index=True, nullable=False)
     chunk_text = Column(Text, nullable=False)
-    chunk_id = Column(String, index=True, nullable=False)
+    chunk_id = Column(String, unique=True, index=True, nullable=False)
     source_id = Column(String, index=True, nullable=False)
     chunk_index = Column(Integer, index=True, nullable=False)
     timestamp = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
+    
+    # Issue #8 fields
+    document_id = Column(String, index=True, nullable=False)
+    content_hash = Column(String, nullable=False)
+    embedding_model = Column(String, nullable=False)
+    chunking_version = Column(String, nullable=False)
 
 @dataclass
 class NewsChunk:
-    chunk_id:str
-    source_id:str
-    chunk_index:int
-    symbol:str
-    timestamp:str
-    text:str
+    chunk_id: str
+    source_id: str
+    chunk_index: int
+    symbol: str
+    timestamp: str
+    text: str
+    document_id: str
+    content_hash: str
+    chunking_version: str = "v1"
     
 
 # Register MetricRecord on the SQLAlchemy Base metadata

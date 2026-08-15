@@ -81,14 +81,27 @@ class FAISSStore:
         faiss.write_index(self.index, self.save_path)
         logger.debug("FAISSStore | Index saved to '%s'", self.save_path)
 
-    async def add_vector(self, chunk_id:int, source_id:str,  symbol: str, chunk_index:int, chunk_text:str, timestamp:datetime, vector: np.ndarray, db_session: AsyncSession) -> int:
+    async def add_vector(
+        self,
+        chunk_id: str,
+        source_id: str,
+        symbol: str,
+        chunk_index: int,
+        chunk_text: str,
+        timestamp: datetime,
+        vector: np.ndarray,
+        document_id: str,
+        content_hash: str,
+        chunking_version: str,
+        db_session: AsyncSession
+    ) -> int:
         """
         Inserts new text metadata into the PostgreSQL DB to get an ID.
         Then saves the vector to FAISS bounded to that ID.
 
         Parameters
         ----------
-        chunk_id : int
+        chunk_id : str
             The unique identifier for the chunk.
         source_id : str
             The unique identifier for the source.
@@ -102,6 +115,12 @@ class FAISSStore:
             The timestamp of the chunk.
         vector : np.ndarray
             The embedding vector of the chunk.
+        document_id : str
+            The stable identifier for the parent document.
+        content_hash : str
+            The hash of the parent document content.
+        chunking_version : str
+            The chunking logic version used.
         db_session : AsyncSession
             The database session.
             
@@ -119,7 +138,19 @@ class FAISSStore:
             timestamp = timestamp.astimezone(timezone.utc).replace(tzinfo=None)
 
         # 1. Insert Metadata into Database
-        metadata = RagNewsMetadata(chunk_id=chunk_id, source_id=source_id,  symbol=symbol, chunk_index=chunk_index, chunk_text=chunk_text, timestamp=timestamp)
+        from src.config.settings import settings
+        metadata = RagNewsMetadata(
+            chunk_id=chunk_id,
+            source_id=source_id,
+            symbol=symbol,
+            chunk_index=chunk_index,
+            chunk_text=chunk_text,
+            timestamp=timestamp,
+            document_id=document_id,
+            content_hash=content_hash,
+            embedding_model=settings.MODEL_NAME,
+            chunking_version=chunking_version
+        )
         db_session.add(metadata)
         await db_session.flush()  # We flush to acquire `metadata.id` before commit
 
@@ -139,6 +170,20 @@ class FAISSStore:
             # If FAISS throws error, rollback the Postgres metadata insertion
             await db_session.rollback()
             logger.error("FAISSStore | Rollback! Error inserting to FAISS: %s", e)
+            raise
+
+    def delete_vectors(self, ids: list[int]) -> None:
+        """
+        Removes the specified IDs (PostgreSQL sequence IDs) from the FAISS IndexIDMap.
+        """
+        if not ids:
+            return
+        try:
+            ids_array = np.array(ids, dtype=np.int64)
+            self.index.remove_ids(ids_array)
+            logger.info("FAISSStore | Removed %d vector IDs from FAISS index", len(ids))
+        except Exception as e:
+            logger.error("FAISSStore | Error removing IDs from FAISS: %s", e)
             raise
 
     async def search(self, query_vector: np.ndarray, top_k: int, db_session: AsyncSession) -> list[RagNewsMetadata]:
